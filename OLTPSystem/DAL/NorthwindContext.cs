@@ -7,7 +7,7 @@ using OLTPSystem.Entities;
 
 namespace OLTPSystem.DAL;
 
-internal partial class NorthwindContext : DbContext
+public partial class NorthwindContext : DbContext
 {
     public NorthwindContext()
     {
