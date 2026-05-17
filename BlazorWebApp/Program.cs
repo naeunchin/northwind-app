@@ -1,4 +1,7 @@
 using BlazorWebApp.Components;
+using OLTPSystem;
+using Microsoft.EntityFrameworkCore;
+using MudBlazor.Services;
 
 namespace BlazorWebApp
 {
@@ -11,6 +14,12 @@ namespace BlazorWebApp
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+
+            builder.Services.AddMudServices();
+
+            var connectionString = builder.Configuration.GetConnectionString("NorthwindConnection") ?? throw new InvalidOperationException("Connection string 'NorthwindConnection' not found.");
+
+            builder.Services.OLTPDependencies(options => options.UseSqlServer(connectionString));
 
             var app = builder.Build();
 

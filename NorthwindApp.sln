@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36908.2 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorWebApp", "BlazorWebApp\BlazorWebApp.csproj", "{6F873D97-704F-4397-B750-71A591FF5BE3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OLTPSystem", "OLTPSystem\OLTPSystem.csproj", "{7597E429-C6B1-4E99-8204-5E6280BDB52E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{6F873D97-704F-4397-B750-71A591FF5BE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F873D97-704F-4397-B750-71A591FF5BE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F873D97-704F-4397-B750-71A591FF5BE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7597E429-C6B1-4E99-8204-5E6280BDB52E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7597E429-C6B1-4E99-8204-5E6280BDB52E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7597E429-C6B1-4E99-8204-5E6280BDB52E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7597E429-C6B1-4E99-8204-5E6280BDB52E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
