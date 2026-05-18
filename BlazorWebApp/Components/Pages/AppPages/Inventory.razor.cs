@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using OLTPSystem.BLL;
 using OLTPSystem.ViewModels;
+using System.Threading.Tasks;
 
 namespace BlazorWebApp.Components.Pages.AppPages
 {
@@ -29,7 +30,7 @@ namespace BlazorWebApp.Components.Pages.AppPages
         /// <summary>
         /// Performs the asynchronous lookup of product inventory data based on the user's current selection filter input.
         /// </summary>
-        public void GetProducts()
+        public async Task GetProducts()
         {
             errorDetails.Clear();
             errorMessage = string.Empty;
@@ -39,6 +40,31 @@ namespace BlazorWebApp.Components.Pages.AppPages
             try
             {
                 BYSResults.Result<List<ProductView>> result;
+
+                if (!string.IsNullOrWhiteSpace(productName))
+                {
+                    result = await ProductService.LookupProducts(productName);
+                }
+                else if (categoryID > 0)
+                {
+                    result = await ProductService.LookupProducts(categoryID);
+                }
+                else
+                {
+                    errorMessage = "Search Validation Failed";
+                    errorDetails.Add("Please enter a partial Product Name or select a valid Category to query inventory records.");
+                    return;
+                }
+
+                if (result.IsSuccess)
+                {
+                    ProductList = result.Value;
+                    feedbackMessage = $"Successfully loaded {ProductList.Count} inventory records.";
+                }
+                else
+                {
+                    errorDetails = ErrorMessageHelperClass.GetErrorMessages(result.Errors.ToList());
+                }
             }
             catch (Exception ex)
             {
