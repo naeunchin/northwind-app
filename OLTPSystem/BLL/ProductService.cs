@@ -96,26 +96,27 @@ namespace OLTPSystem.BLL
 
             return result.WithValue(products);
         }
-        
+
         /// <summary>
-        /// Queries product records that belong to a specific category by its identification number.
+        /// Queries a specific product record by its unique identification number.
         /// </summary>
-        /// <param name="categoryID">The unique primary key of the category.</param>
-        /// <returns>A BYS Result container wrapping a list of matching ProductView records or error messages.</returns>
-        public async Task<Result<List<ProductView>>> LookupProducts(int categoryID)
+        /// <param name="productID">The unique primary key of the product.</param>
+        /// <returns>A BYS Result container wrapping a list containing the single matching ProductView.</returns>
+        public async Task<Result<List<ProductView>>> LookupProducts(int productID)
         {
             var result = new Result<List<ProductView>>();
 
-            if (categoryID <= 0)
+            if (productID <= 0)
             {
-                result.AddError(new Error("Invalid ID", "A valid category ID integer must be provided"));
+                result.AddError(new Error("Invalid ID", "A valid Product ID integer must be provided."));
                 return result;
             }
 
             var products = await _context.Products
-                .Where(p => p.CategoryID == categoryID)
+                .Where(p => p.ProductID == productID)
                 .Select(p => new ProductView
                 {
+                    ProductID = p.ProductID,
                     ProductName = p.ProductName,
                     SupplierID = p.SupplierID,
                     CategoryID = p.CategoryID,
@@ -127,11 +128,11 @@ namespace OLTPSystem.BLL
                     Discontinued = p.Discontinued,
                     CategoryName = p.Category != null ? p.Category.CategoryName : "Uncategorized",
                     SupplierCompanyName = p.Supplier != null ? p.Supplier.CompanyName : "No Supplier Listed"
-                }).OrderBy(p => p.ProductName).ToListAsync();
+                }).ToListAsync();
 
             if (products == null || products.Count <= 0)
             {
-                result.AddError(new Error("No Products Found", $"No inventory products were found matching Category ID: {categoryID}."));
+                result.AddError(new Error("Not Found", $"No inventory product was found matching ID: {productID}."));
                 return result;
             }
 

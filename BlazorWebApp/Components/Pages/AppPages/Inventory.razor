@@ -1,7 +1,98 @@
 ﻿@page "/inventory"
 
-<h3>Inventory</h3>
+<PageTitle>Product Inventory</PageTitle>
 
-@code {
+<MudText Typo="Typo.h3" Class="mb-4">Inventory Search</MudText>
 
+<MudCard Elevation="2" Class="mb-6 rounded-lg">
+	<MudCardHeader>
+		<CardHeaderContent>
+			<MudText Typo="Typo.h6" Color="Color.Primary">Search Product</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary">Search by entering a partial product name or product ID.</MudText>
+		</CardHeaderContent>
+	</MudCardHeader>
+	<MudCardContent>
+		<MudGrid Alignment="GridAlignment.Center">
+			<MudItem xs="12" sm="4">
+				<MudTextField @bind-Value="searchTerm"
+							 Label="Search by Product Name or ID"
+							 Variant="Variant.Outlined"
+							 Clearable="true"
+							 Placeholder="e.g., Chai, 7..." />
+			</MudItem>
+
+			<MudItem xs="12" sm="2" Class="d-flex justify-end gap-2">
+				<MudButton Variant="Variant.Filled"
+						   Color="Color.Primary"
+						   OnClick="GetProducts"
+						   StartIcon="@Icons.Material.Filled.Search"
+						   Class="py-3 px-4 rounded-lg">
+					Get
+				</MudButton>
+				<MudButton Variant="Variant.Outlined"
+						   Color="Color.Primary"
+						   OnClick="NewProduct"
+						   StartIcon="@Icons.Material.Filled.Add"
+						   Class="py-3 px-4 rounded-lg">
+					New
+				</MudButton>
+			</MudItem>
+		</MudGrid>
+	</MudCardContent>
+</MudCard>
+
+<FeedbackAndErrorDisplay ErrorDetails="@errorDetails" ErrorMessage="@errorMessage" FeedbackMessage="@feedbackMessage" />
+
+@if (ProductList != null && ProductList.Any())
+{
+	<MudDataGrid Items="@ProductList" 
+				Filterable="true" 
+				SortMode="SortMode.Multiple" 
+				Elevation="3" 
+				Class="rounded-lg" 
+				Striped="true" 
+				HeaderClass="mud-theme-tertiary">
+		<Columns>
+			<TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+				<CellTemplate>
+					<MudIconButton Icon="@Icons.Material.Filled.Edit"
+								Color="Color.Secondary"
+								Size="Size.Small"
+								OnClick="@(() => EditProduct(context.Item.ProductID))"
+								Title="Modify Records" />
+				</CellTemplate>
+			</TemplateColumn>
+
+			<PropertyColumn Property="x => x.ProductID" Title="Product ID" Sortable="true" />
+			<PropertyColumn Property="x => x.ProductName" Title="Product Name" Sortable="true" />
+			<PropertyColumn Property="x => x.CategoryName" Title="Category" Sortable="true" />
+			<PropertyColumn Property="x => x.SupplierCompanyName" Title="Supplier" Sortable="true" />
+			<PropertyColumn Property="x => x.UnitPrice" Title="Price" Format="C" Sortable="true" />
+			<PropertyColumn Property="x => x.UnitsInStock" Title="In Stock" Sortable="true" />
+			<TemplateColumn Title="Market Status" Sortable="true" Filterable="true">
+				<CellTemplate>
+					@if (context.Item.Discontinued)
+					{
+						<MudChip T="string" Color="Color.Error" Size="Size.Small" Variant="Variant.Outlined">Discontinued</MudChip>
+					}
+					else
+					{
+						<MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Outlined">Active</MudChip>
+					}
+				</CellTemplate>
+			</TemplateColumn>
+		</Columns>
+
+		<PagerContent>
+			<MudDataGridPager T="ProductView" PageSizeOptions="new int[] {10, 25, 50, 100}" />
+		</PagerContent>
+	</MudDataGrid>
+}
+else
+{
+	<MudPaper Class="d-flex flex-column align-content-center justify-content-center mud-width-full py-12 px-4" Elevation="0">
+		<MudIcon Icon="@Icons.Material.Filled.Inbox" Color="Color.Tertiary" Size="Size.Large" Class="mb-2" />
+		<MudText Typo="Typo.h6" Color="Color.Primary">No Inventory Data to Display.</MudText>
+		<MudText Typo="Typo.body2" Color="Color.Secondary">Execute a filter query above to find inventory products.</MudText>
+	</MudPaper>
 }

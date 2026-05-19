@@ -9,11 +9,12 @@ namespace BlazorWebApp.Components.Pages.AppPages
     {
         #region Fields
         private string productName = string.Empty;
-        private int categoryID = 0;
+        private string searchTerm = string.Empty;
+        private List<ProductView> ProductList = [];
+
         private string feedbackMessage = string.Empty;
         private List<string> errorDetails = new();
         private string errorMessage = string.Empty;
-        private List<ProductView> ProductList = [];
         #endregion
 
         #region Injection & Properties
@@ -27,6 +28,29 @@ namespace BlazorWebApp.Components.Pages.AppPages
         #endregion
 
         #region Methods
+        protected override async Task OnInitializedAsync()
+        {
+            try
+            {
+                var result = await ProductService.GetProductsAsync();
+
+                if (result.IsSuccess)
+                {
+                    ProductList = result.Value;
+                }
+                else
+                {
+                    errorMessage = "Failed to load the inventory";
+                    errorDetails = ErrorMessageHelperClass.GetErrorMessages(result.Errors.ToList());
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = "An error occurred while connecting to the database";
+                errorDetails.Add(ex.Message);
+            }
+        }
+
         /// <summary>
         /// Performs the asynchronous lookup of product inventory data based on the user's current selection filter input.
         /// </summary>
@@ -41,19 +65,22 @@ namespace BlazorWebApp.Components.Pages.AppPages
             {
                 BYSResults.Result<List<ProductView>> result;
 
-                if (!string.IsNullOrWhiteSpace(productName))
+                if (string.IsNullOrWhiteSpace(searchTerm))
                 {
-                    result = await ProductService.LookupProducts(productName);
+                    errorMessage = "Search Validation Failed";
+                    errorDetails.Add("Please enter a product name or a product ID to search.");
+                    return;
                 }
-                else if (categoryID > 0)
+
+                if (int.TryParse(searchTerm, out int parsedProductID))
                 {
-                    result = await ProductService.LookupProducts(categoryID);
+                    // If it contains numbers, search by ID
+                    result = await ProductService.LookupProducts(parsedProductID);
                 }
                 else
                 {
-                    errorMessage = "Search Validation Failed";
-                    errorDetails.Add("Please enter a partial Product Name or select a valid Category to query inventory records.");
-                    return;
+                    // If it contains letters, search by partial name
+                    result = await ProductService.LookupProducts(searchTerm);
                 }
 
                 if (result.IsSuccess)
