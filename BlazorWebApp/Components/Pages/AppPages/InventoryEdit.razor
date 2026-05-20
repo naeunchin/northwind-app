@@ -1,0 +1,12 @@
+﻿@page "/SamplePages/CustomerEdit/{ProductID:int}"
+
+<h3>InventoryEdit</h3>
+
+@if (ProductID == 0)
+{
+    <MudText Typo="Typo.h3">New Customer</MudText>
+}
+else
+{
+    <MudText Typo="Typo.h3">Edit Product: </MudText>
+}

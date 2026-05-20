@@ -138,5 +138,136 @@ namespace OLTPSystem.BLL
 
             return result.WithValue(products);
         }
+
+        /// <summary>
+        /// Retrieves a single product record by its primary key.
+        /// </summary>
+        /// <param name="productID"></param>
+        /// <returns></returns>
+        public async Task<Result<ProductView>> GetProductByIDAsync(int productID)
+        {
+            var result = new Result<ProductView>();
+
+            var product = await _context.Products
+                                                .Where(p => p.ProductID == productID)
+                                                .Select(p => new ProductView
+                                                {
+                                                    ProductID = productID,
+                                                    ProductName = p.ProductName,
+                                                    SupplierID = p.SupplierID,
+                                                    CategoryID = p.CategoryID,
+                                                    QuantityPerUnit = p.QuantityPerUnit,
+                                                    UnitPrice = p.UnitPrice,
+                                                    UnitsInStock = p.UnitsInStock,
+                                                    UnitsOnOrder = p.UnitsOnOrder,
+                                                    ReorderLevel = p.ReorderLevel,
+                                                    Discontinued = p.Discontinued,
+                                                    CategoryName = p.Category != null ? p.Category.CategoryName : "Uncategorized",
+                                                    SupplierCompanyName = p.Supplier != null ? p.Supplier.CompanyName : "No Supplier listed"
+                                                })
+                                                .FirstOrDefaultAsync();
+            if (product == null)
+            {
+                result.AddError(new Error("No Product", $"No product was found with ID: {productID}"));
+                return result;
+            }
+
+            return result.WithValue(product);
+        }
+
+        /// <summary>
+        /// Applies business rules and validations to commit insertion or modification of product records.
+        /// </summary>
+        /// <param name="editProduct">The view model transaction state suvmitted from the user interface.</param>
+        /// <returns>A BYS Result container wrapping the refreshed product state or errors.</returns>
+        public async Task<Result<ProductView>> AddEditProduct(ProductView editProduct)
+        {
+            var result = new Result<ProductView>();
+
+            if (editProduct == null)
+            {
+                result.AddError(new Error("Missing Information", "No product was provided."));
+                return result;
+            }
+
+            #region Business logic & validation
+            
+            // Mandatory string fields
+            if (string.IsNullOrWhiteSpace(editProduct.ProductName))
+                result.AddError(new Error("Missing Information", "Product name is required."));
+
+            // FK relationships must be explicitly mapped 
+            if (editProduct.CategoryID == null || editProduct.CategoryID <= 0)
+                result.AddError(new Error("Missing Information", "A valid category classification must be assigned."));
+
+            if (editProduct.SupplierID == null || editProduct.SupplierID <= 0)
+                result.AddError(new Error("Missing Information", "A valid supplier organization must be assigned."));
+
+            // Prevent negative inputs
+            if (editProduct.UnitPrice != null && editProduct.UnitPrice < 0)
+                result.AddError(new Error("Invalid Value", "Unit Price cannot be less than $0.00."));
+
+            if (editProduct.UnitsInStock != null && editProduct.UnitsInStock < 0)
+                result.AddError(new Error("Invalid Value", "Units In Stock inventory totals cannot be negative."));
+
+            if (editProduct.UnitsOnOrder != null && editProduct.UnitsOnOrder < 0)
+                result.AddError(new Error("Invalid Value", "Units On Order transactional backlogs cannot be negative."));
+
+            if (editProduct.ReorderLevel != null && editProduct.ReorderLevel < 0)
+                result.AddError(new Error("Invalid Value", "Reorder Threshold safety levels cannot be negative."));
+
+            // Duplicate record check: A product name cannot match an existing item unless it belongs to the row currently being edited 
+            bool existingProduct = await _context.Products
+                                                 .AnyAsync(x => x.ProductName.ToLower() == editProduct.ProductName.ToLower() && x.ProductID != editProduct.ProductID);
+
+            if (existingProduct)
+            {
+                result.AddError(new Error("Duplicate Data Warning", $"An inventory item named {editProduct.ProductName} already exists in the database and cannot be entered again."));
+            }
+
+            // If any validation checks failed, exit early and display the errors 
+            if (result.IsFailure)
+                return result;
+            #endregion
+
+            Product? product = await _context.Products.Where(x => x.ProductID == editProduct.ProductID).FirstOrDefaultAsync();
+
+            if (product == null && editProduct.ProductID == 0)
+            {
+                product = new();
+            }
+            else if (product == null && editProduct.ProductID != 0)
+            {
+                result.AddError(new Error("Cannot find a record to edit", $"Product ID {editProduct.ProductID} cannot be found, edits cannot be made."));
+                return result;
+            }
+
+            product.ProductName = editProduct.ProductName;
+            product.SupplierID = editProduct.SupplierID;
+            product.CategoryID = editProduct.CategoryID;
+            product.QuantityPerUnit = editProduct.QuantityPerUnit;
+            product.UnitPrice = editProduct.UnitPrice;
+            product.UnitsInStock = editProduct.UnitsInStock;
+            product.UnitsOnOrder = editProduct.UnitsOnOrder;
+            product.ReorderLevel = editProduct.ReorderLevel;
+            product.Discontinued = editProduct.Discontinued;
+
+            if (product.ProductID == 0)
+                _context.Products.Add(product);
+            else
+                _context.Products.Update(product);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return await GetProductByIDAsync(product.ProductID);
+            }
+            catch (Exception ex)
+            {
+                _context.ChangeTracker.Clear();
+                result.AddError(new Error("Error Saving Changes", ex.InnerException?.Message ?? string.Empty));
+                return result;
+            }
+        }
     }
 }
