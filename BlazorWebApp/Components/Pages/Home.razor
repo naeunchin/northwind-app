@@ -1,7 +1,149 @@
 ﻿@page "/"
+@using MudBlazor
 
-<PageTitle>Northwind Portal</PageTitle>
+<PageTitle>Northwind Portal Dashboard</PageTitle>
 
-<h1>Welcome to the Northwind Sales Portal!</h1>
+<MudContainer>
 
+    <MudCard Class="mb-6 bg-transparent rounded-lg overflow-hidden" Elevation="0" Outlined="false">
+        <MudGrid Spacing="4" Justify="Justify.Center">
+            <MudItem xs="12" md="10" lg="8" Class="d-flex flex-column justify-center align-center pa-8 pa-sm-12 bg-surface text-center">
+                <MudText Typo="Typo.h3" Color="Color.Primary" Class="font-weight-bold mb-2">
+                    Northwind Sales Portal
+                </MudText>
+                <MudText Typo="Typo.h6" Color="Color.Secondary" Class="mb-4">
+                    Enterprise Operations & Procurement Management Hub
+                </MudText>
+                <MudText Typo="Typo.body1" Class="text-muted mb-6">
+                    Welcome back! Use this secure control panel to manage products, analyze catalog stock volumes, maintain vendor records, and manage client orders.
+                </MudText>
+                <div class="d-flex gap-3">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ListAlt" href="/inventory" Size="Size.Large">
+                        Manage Inventory
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ShoppingCart" href="/orders" Size="Size.Large">
+                        View Orders
+                    </MudButton>
+                </div>
+            </MudItem>
+        </MudGrid>
+    </MudCard>
 
+    <!--I used hard-coded numbers (e.g., 8 items) for display purposes.-->
+    <MudText Typo="Typo.h5" Class="font-weight-bold mb-4" Color="Color.Primary">Overview</MudText>
+    <MudGrid Class="mb-6">
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4 rounded-lg d-flex align-center border-l-4 border-solid border-error">
+                <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Error" Size="Size.Large" Class="mr-4" />
+                <div>
+                    <MudText Typo="Typo.subtitle2" Class="text-muted">Low Stock Warnings</MudText>
+                    <MudText Typo="Typo.h5" Class="font-weight-bold">8 Items</MudText>
+                </div>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4 rounded-lg d-flex align-center border-l-4 border-solid border-primary">
+                <MudIcon Icon="@Icons.Material.Filled.Category" Color="Color.Primary" Size="Size.Large" Class="mr-4" />
+                <div>
+                    <MudText Typo="Typo.subtitle2" Class="text-muted">Active Categories</MudText>
+                    <MudText Typo="Typo.h5" Class="font-weight-bold">8 Domains</MudText>
+                </div>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4 rounded-lg d-flex align-center border-l-4 border-solid border-info">
+                <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Color="Color.Info" Size="Size.Large" Class="mr-4" />
+                <div>
+                    <MudText Typo="Typo.subtitle2" Class="text-muted">Pending Shipments</MudText>
+                    <MudText Typo="Typo.h5" Class="font-weight-bold">14 Orders</MudText>
+                </div>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4 rounded-lg d-flex align-center border-l-4 border-solid border-success">
+                <MudIcon Icon="@Icons.Material.Filled.Business" Color="Color.Success" Size="Size.Large" Class="mr-4" />
+                <div>
+                    <MudText Typo="Typo.subtitle2" Class="text-muted">Active Suppliers</MudText>
+                    <MudText Typo="Typo.h5" Class="font-weight-bold">29 Vendors</MudText>
+                </div>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudText Typo="Typo.h5" Class="font-weight-bold mb-4" Color="Color.Primary">Access Channels</MudText>
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2" Class="rounded-lg h-100 hover-card">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Primary" Variant="Variant.Filled">
+                            <MudIcon Icon="@Icons.Material.Filled.Inventory" />
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6" Class="font-weight-bold">Product Inventory</MudText>
+                        <MudText Typo="Typo.caption">Inventory Management System</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.body2" Class="text-muted">
+                        Access a full list of products available. Add new merchandise and modify or archive listing.
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward" href="/inventory">
+                        Open Product Inventory
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2" Class="rounded-lg h-100 hover-card">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Primary" Variant="Variant.Filled">
+                            <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" />
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6" Class="font-weight-bold">Customer Orders</MudText>
+                        <MudText Typo="Typo.caption">Order Tracking System</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.body2" Class="text-muted">
+                        Create, review, and manage sales orders and histories.
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward" href="/orders">
+                        Open Order Manager
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<style>
+    .text-muted {
+        color: var(--mud-palette-text-secondary);
+    }
+
+    .border-l-4 {
+        border-left-width: 4px !important;
+    }
+
+    .hover-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .hover-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--mud-elevation-4) !important;
+        }
+</style>
