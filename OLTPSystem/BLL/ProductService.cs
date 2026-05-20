@@ -142,7 +142,7 @@ namespace OLTPSystem.BLL
         /// <summary>
         /// Retrieves a single product record by its primary key.
         /// </summary>
-        /// <param name="productID"></param>
+        /// <param name="productID">The unique primary key of the product.</param>
         /// <returns>A BYS Result container wrapping a list containing a single ProductView by its primary key.</returns>
         public async Task<Result<ProductView>> GetProductByIDAsync(int productID)
         {
@@ -178,7 +178,7 @@ namespace OLTPSystem.BLL
         /// <summary>
         /// Applies business rules and validations to commit insertion or modification of product records.
         /// </summary>
-        /// <param name="editProduct">The view model transaction state suvmitted from the user interface.</param>
+        /// <param name="editProduct">The view model transaction state submitted from the user interface.</param>
         /// <returns>A BYS Result container wrapping the refreshed product state or errors.</returns>
         public async Task<Result<ProductView>> AddEditProduct(ProductView editProduct)
         {
