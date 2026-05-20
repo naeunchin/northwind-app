@@ -269,5 +269,37 @@ namespace OLTPSystem.BLL
                 return result;
             }
         }
+
+        /// <summary>
+        /// Retrieves all categories to populate selection dropdown menus in the user interface.
+        /// </summary>
+        /// <returns>A list of categories.</returns>
+        public async Task<Result<List<CategoryView>>> GetCategoriesAsync()
+        {
+            var result = new Result<List<CategoryView>>();
+            var data = await _context.Categories.Select(c => new CategoryView
+            {
+                CategoryID = c.CategoryID,
+                CategoryName = c.CategoryName
+            }).OrderBy(c => c.CategoryName).ToListAsync();
+
+            return result.WithValue(data);
+        }
+
+        /// <summary>
+        /// Retrieves all suppliers to populate selection dropdown menus in the user interface.
+        /// </summary>
+        /// <returns>A list of suppliers.</returns>
+        public async Task<Result<List<SupplierView>>> GetSuppliersAsync()
+        {
+            var result = new Result<List<SupplierView>>();
+            var data = await _context.Suppliers.Select(s => new SupplierView
+            {
+                SupplierID = s.SupplierID,
+                SupplierCompanyName = s.CompanyName
+            }).OrderBy(s => s.SupplierCompanyName).ToListAsync();
+
+            return result.WithValue(data);
+        }
     }
 }

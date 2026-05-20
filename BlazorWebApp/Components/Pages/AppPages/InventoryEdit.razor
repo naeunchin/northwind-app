@@ -1,12 +1,132 @@
-﻿@page "/SamplePages/CustomerEdit/{ProductID:int}"
+﻿@page "/ProductEdit/{ProductID:int}"
+@namespace BlazorWebApp.Components.Pages.AppPages
 
-<h3>InventoryEdit</h3>
+<div class="mb-4">
+    @if (ProductID == 0)
+    {
+        <MudText Typo="Typo.h4">Add New Product</MudText>
+    }
+    else
+    {
+        <MudText Typo="Typo.h4">Edit Product:@editProduct.ProductName</MudText>
+    }
+</div>
 
-@if (ProductID == 0)
-{
-    <MudText Typo="Typo.h3">New Customer</MudText>
-}
-else
-{
-    <MudText Typo="Typo.h3">Edit Product: </MudText>
-}
+<BlazorWebApp.Components.Custom.FeedbackAndErrorDisplay ErrorDetails="@errorDetails" ErrorMessage="@errorMessage" FeedbackMessage="@feedbackMessage" />
+
+<MudForm @ref="productForm" @bind-IsValid="isFormValid" @bind-IsTouched="hasFormChanged">
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudCard class="rounded-lg h-100">
+                <MudCardContent Class="d-flex flex-column gap-4">
+                    <MudText Typo="Typo.button" Color="Color.Primary" Class="font-weight-bold">Product Details</MudText>
+
+                    <MudTextField Label="Product Name"
+                                  @bind-Value="editProduct.ProductName"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  RequiredError="Product name is required."
+                                  MaxLength="40"
+                                  Immediate="true" />
+
+                    <MudSelect @bind-Value="editProduct.CategoryID"
+                               Variant="Variant.Outlined"
+                               Label="Product Category"
+                               Required="true"
+                               RequiredError="A category must be selected."
+                               Placeholder="Select Category...">
+                        @foreach (var category in categoryOptions)
+                        {
+                            <MudSelectItem T="int?" Value="@category.CategoryID">@category.CategoryName</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudSelect @bind-Value="editProduct.SupplierID"
+                               Variant="Variant.Outlined"
+                               Label="Supplier Vendor"
+                               Required="true"
+                               RequiredError="A supplier vendor must be selected."
+                               Placeholder="Select Vendor...">
+                        @foreach (var vendor in supplierOptions)
+                        {
+                            <MudSelectItem T="int?" Value="@vendor.SupplierID">@vendor.SupplierCompanyName</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudTextField Label="Quantity Per Unit Description"
+                                  @bind-Value="editProduct.QuantityPerUnit"
+                                  Variant="Variant.Outlined"
+                                  Placeholder="e.g., 24 - 12 oz bottles, 48 - 6 oz jars"
+                                  MaxLength="20"
+                                  Immediate="true" />
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudCard Elevation="2" Class="rounded-lg h-100">
+                <MudCardContent Class="d-flex flex-column gap-4">
+                    <MudText Typo="Typo.button" Color="Color.Primary" Class="font-weight-bold">Logistics & Ledger Pricing</MudText>
+
+                    <MudNumericField Label="Unit Price"
+                                     @bind-Value="editProduct.UnitPrice"
+                                     Variant="Variant.Outlined"
+                                     Format="C2"
+                                     Min="0.00m"
+                                     Required="true"
+                                     RequiredError="A base selling value rate is required."
+                                     Immediate="true" />
+
+                    <MudNumericField Label="Physical Units In Stock"
+                                     @bind-Value="editProduct.UnitsInStock"
+                                     Variant="Variant.Outlined"
+                                     Min="(short)0"
+                                     Required="true"
+                                     RequiredError="Current inventory counts must be declared."
+                                     Immediate="true" />
+
+                    <MudNumericField Label="Units Currently On Order"
+                                     @bind-Value="editProduct.UnitsOnOrder"
+                                     Variant="Variant.Outlined"
+                                     Min="(short)0"
+                                     Immediate="true" />
+
+                    <MudNumericField Label="Safety Reorder Stock Level"
+                                     @bind-Value="editProduct.ReorderLevel"
+                                     Variant="Variant.Outlined"
+                                     Min="(short)0"
+                                     Immediate="true" />
+
+                    <div class="d-flex align-center mt-2">
+                        <MudSwitch @bind-Value="editProduct.Discontinued"
+                                   Color="Color.Error"
+                                   Label="Mark Item Line as Discontinued" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" Class="mt-4">
+            <MudPaper Elevation="0" Class="d-flex justify-center gap-4 bg-transparent">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Save"
+                           Disabled="@(!isFormValid || !hasFormChanged)"
+                           OnClick="AddEditProduct"
+                           Size="Size.Large"
+                           Class="px-8 py-3 rounded-lg">
+                    Save Record
+                </MudButton>
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Secondary"
+                           StartIcon="@Icons.Material.Filled.Cancel"
+                           OnClick="Cancel"
+                           Size="Size.Large"
+                           Class="px-8 py-3 rounded-lg">
+                    @closeButtonText
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudForm>
