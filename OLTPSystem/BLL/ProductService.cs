@@ -143,7 +143,7 @@ namespace OLTPSystem.BLL
         /// Retrieves a single product record by its primary key.
         /// </summary>
         /// <param name="productID"></param>
-        /// <returns></returns>
+        /// <returns>A BYS Result container wrapping a list containing a single ProductView by its primary key.</returns>
         public async Task<Result<ProductView>> GetProductByIDAsync(int productID)
         {
             var result = new Result<ProductView>();
