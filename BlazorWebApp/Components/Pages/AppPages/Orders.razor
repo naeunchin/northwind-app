@@ -1,7 +1,86 @@
 ﻿@page "/orders"
+@namespace BlazorWebApp.Components.Pages.AppPages
 
-<h3>Orders</h3>
+<PageTitle>Orders Management</PageTitle>
 
-@code {
+<MudText Typo="Typo.h3" Class="mb-4">Customer Orders</MudText>
 
+<MudCard Elevation="0" Outlined="false" Class="mb-6 bg-transparent">
+    <MudGrid Spacing="4" Justify="Justify.FlexStart" Alignment="GridAlignment.Center">
+		<MudItem xs="12" sm="9" Class="mb-2 bg-transparent">
+			<MudTextField @bind-Value="searchTerm" Label="Search Orders" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Receipt" Clearable="true" Placeholder="Enter Order ID or Customer ID..." />
+		</MudItem>
+
+        <MudItem xs="12" sm="3" Class="d-flex gap-2">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="GetOrders"
+                       StartIcon="@Icons.Material.Filled.Search"
+                       Class="py-3 px-4 flex-grow-1 flex-sm-grow-0 rounded-lg">
+                Fetch
+            </MudButton>
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Secondary"
+                       OnClick="NewOrder"
+                       StartIcon="@Icons.Material.Filled.PostAdd"
+                       Class="py-3 px-4 flex-grow-1 flex-sm-grow-0 rounded-lg">
+                New
+            </MudButton>
+        </MudItem>
+	</MudGrid>
+</MudCard>
+
+<FeedbackAndErrorDisplay ErrorDetails="@errorDetails" ErrorMessage="@errorMessage" FeedbackMessage="@feedbackMessage" />
+
+@if (OrderList != null && OrderList.Any())
+{
+    <MudDataGrid Items="@OrderList"
+                Filterable="true"
+                SortMode="SortMode.Multiple"
+                Elevation="3"
+                Class="rounded-lg"
+                Striped="true"
+                HeaderClass="mud-theme-info">
+        <Columns>
+            <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+                <CellTemplate>
+                    <div class="d-flex gap-1">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                            Color="Color.Secondary"
+                                            Size="Size.Small"
+                                            onclick="@(() => EditOrder(context.Item.OrderID))"
+                                            title="Edit Order"/>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       onclick="@(() => DeleteOrder(context.Item.OrderID))"
+                                       title="Delete Order" />
+                    </div>
+                </CellTemplate>
+            </TemplateColumn>
+
+            <PropertyColumn Property="x => x.OrderID" Title="Order ID" Sortable="true" />
+            <PropertyColumn Property="x => x.CustomerID" Title="Customer ID" Sortable="true" />
+            <PropertyColumn Property="x => x.CustomerCompanyName" Title="Customer Company" Sortable="true" />
+            <PropertyColumn Property="x => x.EmployeeFullName" Title="Employee" Sortable="true" />
+            <PropertyColumn Property="x => x.OrderDate" Title="Order Date" Format="yyyy-MM-dd" Sortable="true" />
+            <PropertyColumn Property="x => x.ShippedDate" Title="Shipped Date" Format="yyyy-MM-dd" Sortable="true" />
+            <PropertyColumn Property="x => x.ShipperName" Title="Shipper" Sortable="true" />
+            <PropertyColumn Property="x => x.Freight" Title="Freight Cost" Format="C" Sortable="true" />
+            <PropertyColumn Property="x => x.ShipCity" Title="Destination City" Sortable="true" />
+            <PropertyColumn Property="x => x.ShipCountry" Title="Destination Country" Sortable="true" />
+        </Columns>
+
+        <PagerContent>
+            <MudDataGridPager T="OLTPSystem.ViewModels.OrderView" PageSizeOptions="new int[] { 10, 25, 50, 100 }" />
+        </PagerContent>
+    </MudDataGrid>
+}
+else
+{
+    <MudPaper Class="d-flex flex-column align-center justify-center mud-width-full py-12 px-4 border-dashed border-2" Elevation="0">
+        <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Tertiary" Size="Size.Large" Class="mb-2" />
+        <MudText Typo="Typo.h6" Color="Color.Primary">No Orders Found</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="text-center">Enter a search keyword to find customer orders.</MudText>
+    </MudPaper>
 }
