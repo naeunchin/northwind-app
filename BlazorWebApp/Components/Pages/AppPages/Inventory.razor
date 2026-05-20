@@ -4,41 +4,29 @@
 
 <MudText Typo="Typo.h3" Class="mb-4">Inventory Search</MudText>
 
-<MudCard Elevation="2" Class="mb-6 rounded-lg">
-	<MudCardHeader>
-		<CardHeaderContent>
-			<MudText Typo="Typo.h6" Color="Color.Primary">Search Product</MudText>
-            <MudText Typo="Typo.caption" Color="Color.Secondary">Search by entering a partial product name or product ID.</MudText>
-		</CardHeaderContent>
-	</MudCardHeader>
-	<MudCardContent>
-		<MudGrid Alignment="GridAlignment.Center">
-			<MudItem xs="12" sm="4">
-				<MudTextField @bind-Value="searchTerm"
-							 Label="Search by Product Name or ID"
-							 Variant="Variant.Outlined"
-							 Clearable="true"
-							 Placeholder="e.g., Chai, 7..." />
-			</MudItem>
+<MudCard Elevation="0" Outlined="false" Class="mb-6 bg-transparent">
+	<MudGrid Spacing="4" Justify="Justify.FlexStart" Alignment="GridAlignment.Center">
+		<MudItem xs="12" sm="9" Class="mb-2 bg-transparent">
+			<MudTextField @bind-Value="searchTerm" Label="Search by Product Name or ID" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Receipt" Clearable="true" Placeholder="e.g., Chai, 7..." />
+		</MudItem>
 
-			<MudItem xs="12" sm="2" Class="d-flex justify-end gap-2">
-				<MudButton Variant="Variant.Filled"
-						   Color="Color.Primary"
-						   OnClick="GetProducts"
-						   StartIcon="@Icons.Material.Filled.Search"
-						   Class="py-3 px-4 rounded-lg">
-					Get
-				</MudButton>
-				<MudButton Variant="Variant.Outlined"
-						   Color="Color.Primary"
-						   OnClick="NewProduct"
-						   StartIcon="@Icons.Material.Filled.Add"
-						   Class="py-3 px-4 rounded-lg">
-					New
-				</MudButton>
-			</MudItem>
-		</MudGrid>
-	</MudCardContent>
+		<MudItem xs="12" sm="3" Class="d-flex gap-2">
+			<MudButton Variant="Variant.Filled"
+					   Color="Color.Primary"
+					   OnClick="GetProducts"
+					   StartIcon="@Icons.Material.Filled.Search"
+					   Class="py-3 px-4 flex-grow-1 flex-sm-grow-0 rounded-lg">
+				Get
+			</MudButton>
+			<MudButton Variant="Variant.Outlined"
+					   Color="Color.Secondary"
+					   OnClick="NewProduct"
+					   StartIcon="@Icons.Material.Filled.Add"
+					   Class="py-3 px-4 flex-grow-1 flex-sm-grow-0 rounded-lg">
+				New
+			</MudButton>
+		</MudItem>
+	</MudGrid>
 </MudCard>
 
 <FeedbackAndErrorDisplay ErrorDetails="@errorDetails" ErrorMessage="@errorMessage" FeedbackMessage="@feedbackMessage" />
