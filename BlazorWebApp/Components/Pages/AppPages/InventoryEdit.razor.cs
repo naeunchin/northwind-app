@@ -117,6 +117,9 @@ namespace BlazorWebApp.Components.Pages.AppPages
             NavigationManager.NavigateTo("/inventory");
         }
 
+        /// <summary>
+        /// Performs the creation or update of a product record.
+        /// </summary>
         public async Task AddEditProduct()
         {
             ResetMessageStates();
@@ -162,6 +165,9 @@ namespace BlazorWebApp.Components.Pages.AppPages
             }
         }
 
+        /// <summary>
+        /// Redirects user routing back to the products page.
+        /// </summary>
         protected void ReturnToInventory()
         {
             NavigationManager.NavigateTo("/inventory");

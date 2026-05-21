@@ -1,0 +1,22 @@
+﻿@using OLTPSystem.ViewModels
+@namespace BlazorWebApp.Components.Pages.AppPages
+
+<MudDialog>
+    <DialogContent>
+        <div class="d-flex flex-column gap-4 mt-2">
+            <MudSelect T="int" @bind-Value="_selectedProductID" Label="Select Catalog Product" Variant="Variant.Outlined">
+                <MudSelectItem T="int" Value="0">-- Select a Product --</MudSelectItem>
+                @foreach (var prod in ProductOptions)
+                {
+                    <MudSelectItem T="int" Value="@prod.ProductID">@prod.ProductName (@((prod.UnitPrice ?? 0.00m).ToString("C2")))</MudSelectItem>
+                }
+            </MudSelect>
+            <MudNumericField Label="Quantity Count" @bind-Value="_quantity" Variant="Variant.Outlined" Min="(short)1" />
+            <MudNumericField Label="Discount Rate (%)" @bind-Value="_discountPercent" Variant="Variant.Outlined" Min="0" Max="100" Step="5" />
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit" Class="px-6 py-2 rounded-lg">Add Product Item</MudButton>
+        <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>

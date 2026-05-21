@@ -1,0 +1,166 @@
+﻿@page "/OrderEdit/{OrderID:int}"
+@namespace BlazorWebApp.Components.Pages.AppPages
+@rendermode InteractiveServer
+
+<div class="mb-4">
+    @if (OrderID == 0)
+    {
+        <MudText Typo="Typo.h4">Add New Order</MudText>
+    }
+    else
+    {
+        <MudText Typo="Typo.h4">Edit Order: @editOrder.OrderID</MudText>
+    }
+</div>
+
+<BlazorWebApp.Components.Custom.FeedbackAndErrorDisplay ErrorDetails="@errorDetails" ErrorMessage="@errorMessage" FeedbackMessage="@feedbackMessage" />
+
+<MudForm @ref="orderForm" @bind-IsValid="isFormValid" @bind-IsTouched="hasFormChanged">
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="0" Outlined="false" Class="pa-4 rounded-lg bg-surface h-100">
+                <MudCardContent Class="d-flex flex-column gap-4 pa-0">
+                    <MudSelect T="string"
+                               @bind-Value="editOrder.CustomerID"
+                               Variant="Variant.Outlined"
+                               Label="Customer Account"
+                               Required="true"
+                               RequiredError="A customer account is required."
+                               Placeholder="Select Account Profile...">
+                        @foreach (var customer in customerOptions)
+                        {
+                            <MudSelectItem T="string" Value="@customer.CustomerID">@customer.CompanyName</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudSelect T="int?"
+                               @bind-Value="editOrder.EmployeeID"
+                               Variant="Variant.Outlined"
+                               Label="Sales Representative"
+                               Required="true"
+                               RequiredError="A sales representative must be assigned."
+                               Placeholder="Select Employee...">
+                        @foreach (var employee in employeeOptions)
+                        {
+                            <MudSelectItem T="int?" Value="@employee.EmployeeID">@employee.FullName</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudDatePicker Label="Order Date"
+                                   @bind-Date="editOrder.OrderDate"
+                                   Variant="Variant.Outlined"
+                                   Editable="true"
+                                   Required="true"
+                                   RequiredError="An order date is required." />
+
+                    <MudNumericField Label="Calculated Freight Cjarges"
+                                     @bind-Value="editOrder.Freight"
+                                     Variant="Variant.Outlined"
+                                     Format="C2"
+                                     Min="0.00m"
+                                     Immediate="true" />
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="0" Outlined="false" Class="pa-4 rounded-lg bg-surface h-100">
+                <MudCardContent Class="d-flex flex-column gap-4 pa-0">
+                    <MudTextField Label="Destination Ship City"
+                                  @bind-Value="editOrder.ShipCity"
+                                  Variant="Variant.Outlined"
+                                  MaxLength="15"
+                                  Immediate="true" />
+
+                    <MudTextField Label="Destination Ship Country"
+                                  @bind-Value="editOrder.ShipCountry"
+                                  Variant="Variant.Outlined"
+                                  MaxLength="15"
+                                  Immediate="true" />
+
+                    <MudSelect T="string"
+                               @bind-Value="editOrder.ShipperName"
+                               Variant="Variant.Outlined"
+                               Label="Logistical Distribution Carrier"
+                               Placeholder="Select Freight Logistics Entity...">
+                        @foreach (var shipper in shipperOptions)
+                        {
+                            <MudSelectItem T="string" Value="@shipper.CompanyName">@shipper.CompanyName</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudDatePicker Label="Confirmed Dispatch Shipped Date"
+                                   @bind-Date="editOrder.ShippedDate"
+                                   Variant="Variant.Outlined"
+                                   Editable="true"
+                                   Placeholder="Item line pending fulfillment dispatch..." />
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" Class="mt-4">
+            <div class="d-flex align-center justify-space-between mb-3">
+                <MudText Typo="Typo.h5" Class="font-weight-bold" Color="Color.Primary">Add Products to Order</MudText>
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Success"
+                           StartIcon="@Icons.Material.Filled.AddShoppingCart"
+                           OnClick="OpenAddProductItemDialog"
+                           Class="rounded-lg py-2 px-4">
+                    Add Product
+                </MudButton>
+            </div>
+
+            @if (orderItems != null && orderItems.Any())
+            {
+                <MudDataGrid Items="@orderItems" Elevation="2" Striped="true" Bordered="true" Class="rounded-lg">
+                    <Columns>
+                        <PropertyColumn Property="x => x.ProductID" Title="Product ID" />
+                        <PropertyColumn Property="x => x.ProductName" Title="Product Description Name" />
+                        <PropertyColumn Property="x => x.UnitPrice" Title="Agreed Unit Price Rate" Format="C2" />
+                        <PropertyColumn Property="x => x.Quantity" Title="Purchased Qty Count" />
+                        <PropertyColumn Property="x => x.Discount" Title="Applied Discount" Format="P0" />
+                        <PropertyColumn Property="x => x.LineTotal" Title="Gross Line Sum Total" Format="C2" />
+                        <TemplateColumn Title="Controls" Sortable="false" Filterable="false">
+                            <CellTemplate>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               OnClick="@(() => RemoveProductLine(context.Item.ProductID))"
+                                               Title="Drop Product from Order" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </MudDataGrid>
+            }
+            else
+            {
+                <MudPaper Class="d-flex flex-column align-center justify-center mud-width-full py-10 px-4 border-dashed border-2 bg-transparent" Elevation="0">
+                    <MudIcon Icon="@Icons.Material.Filled.RemoveShoppingCart" Color="Color.Secondary" Size="Size.Large" Class="mb-2" />
+                    <MudText Typo="Typo.subtitle1" Color="Color.Secondary" Class="font-weight-bold">Empty Cart</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="text-center">No products have been added to this order yet.</MudText>
+                </MudPaper>
+            }
+        </MudItem>
+
+        <MudItem xs="12" Class="mt-6">
+            <MudPaper Elevation="0" Class="d-flex justify-center gap-4 bg-transparent">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Success"
+                           Disabled="@(!isFormValid || !hasFormChanged)"
+                           OnClick="AddEditOrder"
+                           Size="Size.Large"
+                           Class="px-10 py-3 rounded-lg">
+                    Save Changes
+                </MudButton>
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Error"
+                           OnClick="Cancel"
+                           Size="Size.Large"
+                           Class="px-10 py-3 rounded-lg">
+                    @closeButtonText
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudForm>
