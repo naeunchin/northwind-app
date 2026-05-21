@@ -12,7 +12,7 @@ It demonstrates clean architecture, separated service layers, and interactive UI
 * **Result Pattern Handling:** Uses a custom `Result<T>` wrapper in the Business Logic Layer (BLL) to cleanly pass data and catch exceptions without crashing the UI.
 
 ## App Demo 
-
+To take a quick look at the web app, locate two .GIF files (Inventory-page-demo.gif & Order-page-demo.gif) inside the /DemoGif folder of this repository.
 
 ## Tech Stack & Dependencies 
 * **Framework:** .NET 8 (Blazor Web App - Interactive Server)
