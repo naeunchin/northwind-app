@@ -25,7 +25,7 @@ To run this project locally on your machine, follow these steps:
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/YourUsername/YourRepoName.git](https://github.com/YourUsername/YourRepoName.git)
+   git clone https://github.com/naeunchin/northwind-app.git
    ```
 2. **Setup the Database:** Locate the Northwind .bacpac file inside the /Database folder of this repository. Import the .bacpac file into your local instance of Microsoft SQL Server (using SQL Server Management Studio or Azure Data Studio).
 3. **Configure the Connection String:** Open appsettings.json in the BlazorWebApp project. Update the NorthwindContext connection string to point to your local SQL Server instance.
