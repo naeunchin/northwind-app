@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorWebApp", "BlazorWebAp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OLTPSystem", "OLTPSystem\OLTPSystem.csproj", "{7597E429-C6B1-4E99-8204-5E6280BDB52E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "Northwind.Tests.Unit\UnitTests.csproj", "{B26CF6E0-FBDB-A571-193C-C2D14DDF3113}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "Northwind.Tests.Integration\IntegrationTests.csproj", "{B28C6F93-8016-FDDC-DBE5-A762F3DABDA6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{7597E429-C6B1-4E99-8204-5E6280BDB52E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7597E429-C6B1-4E99-8204-5E6280BDB52E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7597E429-C6B1-4E99-8204-5E6280BDB52E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B26CF6E0-FBDB-A571-193C-C2D14DDF3113}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B26CF6E0-FBDB-A571-193C-C2D14DDF3113}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B26CF6E0-FBDB-A571-193C-C2D14DDF3113}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B26CF6E0-FBDB-A571-193C-C2D14DDF3113}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B28C6F93-8016-FDDC-DBE5-A762F3DABDA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B28C6F93-8016-FDDC-DBE5-A762F3DABDA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B28C6F93-8016-FDDC-DBE5-A762F3DABDA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B28C6F93-8016-FDDC-DBE5-A762F3DABDA6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
