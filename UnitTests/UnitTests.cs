@@ -1,4 +1,4 @@
-﻿namespace Northwind.Tests.Unit;
+﻿namespace UnitTests;
 
 public class UnitTests
 {

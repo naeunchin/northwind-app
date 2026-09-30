@@ -1,4 +1,4 @@
-﻿namespace Northwind.Tests.Integration;
+﻿namespace IntegrationTests;
 
 public class IntegrationTests
 {

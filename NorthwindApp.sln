@@ -7,9 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorWebApp", "BlazorWebAp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OLTPSystem", "OLTPSystem\OLTPSystem.csproj", "{7597E429-C6B1-4E99-8204-5E6280BDB52E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "Northwind.Tests.Unit\UnitTests.csproj", "{B26CF6E0-FBDB-A571-193C-C2D14DDF3113}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{6E2561A6-A9A0-8B76-749F-D9DB18D15A3F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "Northwind.Tests.Integration\IntegrationTests.csproj", "{B28C6F93-8016-FDDC-DBE5-A762F3DABDA6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{59FDAA84-6701-32D0-9E5C-CA30D0B3B987}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,14 +25,14 @@ Global
 		{7597E429-C6B1-4E99-8204-5E6280BDB52E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7597E429-C6B1-4E99-8204-5E6280BDB52E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7597E429-C6B1-4E99-8204-5E6280BDB52E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B26CF6E0-FBDB-A571-193C-C2D14DDF3113}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B26CF6E0-FBDB-A571-193C-C2D14DDF3113}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B26CF6E0-FBDB-A571-193C-C2D14DDF3113}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B26CF6E0-FBDB-A571-193C-C2D14DDF3113}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B28C6F93-8016-FDDC-DBE5-A762F3DABDA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B28C6F93-8016-FDDC-DBE5-A762F3DABDA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B28C6F93-8016-FDDC-DBE5-A762F3DABDA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B28C6F93-8016-FDDC-DBE5-A762F3DABDA6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E2561A6-A9A0-8B76-749F-D9DB18D15A3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E2561A6-A9A0-8B76-749F-D9DB18D15A3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E2561A6-A9A0-8B76-749F-D9DB18D15A3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E2561A6-A9A0-8B76-749F-D9DB18D15A3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59FDAA84-6701-32D0-9E5C-CA30D0B3B987}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59FDAA84-6701-32D0-9E5C-CA30D0B3B987}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59FDAA84-6701-32D0-9E5C-CA30D0B3B987}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59FDAA84-6701-32D0-9E5C-CA30D0B3B987}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
