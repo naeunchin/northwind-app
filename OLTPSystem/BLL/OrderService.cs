@@ -45,13 +45,7 @@ namespace OLTPSystem.BLL
                                                         ShipperName = o.ShipViaNavigation != null ? o.ShipViaNavigation.CompanyName : "Unassigned Carrier"
                                                     }).OrderByDescending(o => o.OrderDate).ToListAsync();
 
-            if (orders == null || orders.Count == 0)
-            {
-                result.AddError(new Error("No Records Located", "The billing ledger database does not contain any historical orders."));
-                return result;
-            }
-
-            return result.WithValue(orders);
+            return Result<List<OrderView>>.Success(orders);
         }
 
         /// <summary>
@@ -61,52 +55,43 @@ namespace OLTPSystem.BLL
         /// <returns>A BYS Result container wrapping a list of matching OrderView records or error messages.</returns>
         public async Task<Result<List<OrderView>>> LookupOrders(string searchTerm)
         {
-            var result = new Result<List<OrderView>>();
-
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
-                result.AddError(new Error("Missing Information", "An order search term (either Order ID or customer ID) must be provided."));
-                return result;
+                return Result<List<OrderView>>.Failure("Missing Information", "Search term is required.");
             }
 
             var query = _context.Orders.AsQueryable();
 
-            string cleanTerm = searchTerm.Trim().ToLower();
-
-            // Check if the search term input is a numerical value
-            if (int.TryParse(cleanTerm, out int parsedOrderID))
+            if (int.TryParse(searchTerm, out int orderId))
             {
-                // Look for the exact Order ID OR a partial text string match on the CustomerID textual code
-                query = query.Where(o => o.OrderID == parsedOrderID);
+                query = query.Where(o => o.OrderID  == orderId);
             }
             else
             {
-                // If it is purely text, filter by partial Customer ID code match
-                query = query.Where(o => o.CustomerID.ToLower().Contains(cleanTerm));
+                query = query.Where(o => o.CustomerID.Contains(searchTerm));
             }
 
-            var orders = await query.Select(o => new OrderView
-                                                        {
-                                                            OrderID = o.OrderID,
-                                                            CustomerID = o.CustomerID,
-                                                            CustomerCompanyName = o.Customer != null ? o.Customer.CompanyName : "Individual Account",
-                                                            EmployeeID = o.EmployeeID,
-                                                            EmployeeFullName = o.Employee != null ? o.Employee.FirstName + " " + o.Employee.LastName : "Northwind Employee",
-                                                            OrderDate = o.OrderDate,
-                                                            ShippedDate = o.ShippedDate,
-                                                            Freight = o.Freight,
-                                                            ShipCity = o.ShipCity,
-                                                            ShipCountry = o.ShipCountry,
-                                                            ShipperName = o.ShipViaNavigation != null ? o.ShipViaNavigation.CompanyName : "Unassigned Carrier"
-                                                        }).OrderByDescending(o => o.OrderDate).ToListAsync();
-
-            if (orders == null || orders.Count <= 0)
+            var results = await query.Select(o => new OrderView
             {
-                result.AddError(new Error("No Orders Found", $"No records matched the criteria: '{searchTerm}'."));
-                return result;
+                OrderID = o.OrderID,
+                CustomerID = o.CustomerID,
+                CustomerCompanyName = o.Customer != null ? o.Customer.CompanyName : "Individual Account",
+                EmployeeID = o.EmployeeID,
+                EmployeeFullName = o.Employee != null ? o.Employee.FirstName + " " + o.Employee.LastName : "Northwind Employee",
+                OrderDate = o.OrderDate,
+                ShippedDate = o.ShippedDate,
+                Freight = o.Freight,
+                ShipCity = o.ShipCity,
+                ShipCountry = o.ShipCountry,
+                ShipperName = o.ShipViaNavigation != null ? o.ShipViaNavigation.CompanyName : "Unassigned Carrier"
+            }).OrderByDescending(o => o.OrderDate).ToListAsync();
+
+            if (!results.Any())
+            {
+                return Result<List<OrderView>>.Failure("No Records Located", "No orders matched your search criteria.");
             }
 
-            return result.WithValue(orders);
+            return Result<List<OrderView>>.Success(results);
         }
 
         /// <summary>
