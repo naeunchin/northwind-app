@@ -196,10 +196,41 @@ namespace OLTPSystem.BLL
             order.ShipCity = editOrder.ShipCity;
             order.ShipCountry = editOrder.ShipCountry;
 
+            if (order.OrderID != 0)
+            {
+                var incomingProductIds = orderItems.Select(i => i.ProductID).ToList();
+                var removedDetails = order.Order_Details.Where(d => !incomingProductIds.Contains(d.ProductID)).ToList();
+                
+                foreach (var stale in removedDetails)
+                {
+                    _context.Order_Details.Remove(stale);
+                }
+            }
+
+            foreach (var item in orderItems)
+            {
+                var existingLine = order.Order_Details.FirstOrDefault(d => d.ProductID == item.ProductID);
+
+                if (existingLine == null)
+                {
+                    existingLine = new Order_Detail
+                    {
+                        ProductID = item.ProductID,
+                        OrderID = item.OrderID
+                    };
+
+                    order.Order_Details.Add(existingLine);
+                }
+
+                existingLine.UnitPrice = item.UnitPrice;
+                existingLine.Quantity = item.Quantity;
+                existingLine.Discount = item.Discount;
+            }
+
             if (order.OrderID == 0)
+            {
                 _context.Orders.Add(order);
-            else
-                _context.Orders.Update(order);
+            }
 
             try
             {
