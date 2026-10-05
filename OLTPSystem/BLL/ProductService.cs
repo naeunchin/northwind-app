@@ -74,19 +74,20 @@ namespace OLTPSystem.BLL
             var products = await _context.Products
                 .Where(p => p.ProductName.ToLower().Contains(productName.ToLower()))
                 .Select(p => new ProductView
-            {
-                ProductName = p.ProductName,
-                SupplierID = p.SupplierID,
-                CategoryID = p.CategoryID,
-                QuantityPerUnit = p.QuantityPerUnit,
-                UnitPrice = p.UnitPrice,
-                UnitsInStock = p.UnitsInStock,
-                UnitsOnOrder = p.UnitsOnOrder,
-                ReorderLevel = p.ReorderLevel,
-                Discontinued = p.Discontinued,
-                CategoryName = p.Category != null ? p.Category.CategoryName : "Uncategorized",
-                SupplierCompanyName = p.Supplier != null ? p.Supplier.CompanyName : "No Supplier Listed"
-            }).OrderBy(p => p.ProductName).ToListAsync();
+                 {
+                    ProductID = p.ProductID,
+                    ProductName = p.ProductName,
+                    SupplierID = p.SupplierID,
+                    CategoryID = p.CategoryID,
+                    QuantityPerUnit = p.QuantityPerUnit,
+                    UnitPrice = p.UnitPrice,
+                    UnitsInStock = p.UnitsInStock,
+                    UnitsOnOrder = p.UnitsOnOrder,
+                    ReorderLevel = p.ReorderLevel,
+                    Discontinued = p.Discontinued,
+                    CategoryName = p.Category != null ? p.Category.CategoryName : "Uncategorized",
+                    SupplierCompanyName = p.Supplier != null ? p.Supplier.CompanyName : "No Supplier Listed"
+                }).OrderBy(p => p.ProductName).ToListAsync();
 
             if (products == null || products.Count <= 0)
             {
