@@ -74,8 +74,12 @@ namespace UnitTests.Services
         [Fact]
         public async Task GetOrdersAsync_WhenNoOrdersExist_ReturnsSuccessWithEmptyList()
         {
+            // Arrange
+            using var context = CreateContext();
+            var service = new OrderService(context);
+
             // Act
-            var result = await _service.GetOrdersAsync();
+            var result = await service.GetOrdersAsync();
 
             // Assert
             result.IsSuccess.Should().BeTrue();
@@ -86,26 +90,108 @@ namespace UnitTests.Services
         [Fact]
         public async Task GetOrdersAsync_WhenOrdersExist_ReturnsOrdersByDateDescending()
         {
-            // Arrange 
-            var oldestDate = new DateTime(2026, 1, 1);
-            var middleDate = new DateTime(2026, 5, 1);
-            var newestDate = new DateTime(2026, 10, 1);
-
-            _context.Orders.AddRange(
-                new Order { OrderID = 1, CustomerID = "OLDAT", OrderDate = oldestDate },
-                new Order { OrderID = 2, CustomerID = "MIDAT", OrderDate = middleDate },
-                new Order { OrderID = 3, CustomerID = "NWDAT", OrderDate = newestDate }
+            // Arrange
+            using (var seedContext = CreateContext())
+            {
+                seedContext.Customers.Add(new Customer { CustomerID = "ALFKI", CompanyName = "Alfreds Futterkiste" });
+                seedContext.Orders.AddRange(
+                    new Order { OrderID = 1, CustomerID = "ALFKI", OrderDate = new DateTime(2026, 1, 10) },
+                    new Order { OrderID = 2, CustomerID = "ALFKI", OrderDate = new DateTime(2026, 5, 20) }
                 );
-            await _context.SaveChangesAsync();
+                await seedContext.SaveChangesAsync();
+            }
+
+            using var context = CreateContext();
+            var service = new OrderService(context);
 
             // Act
-            var result = await _service.GetOrdersAsync();
+            var result = await service.GetOrdersAsync();
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            result.Value.Should().HaveCount(3);
-            result.Value.Select(o => o.OrderID).Should().ContainInConsecutiveOrder(3, 2, 1);
+            result.Value.Should().HaveCount(2);
+            result.Value[0].OrderID.Should().Be(2); // Newest first
+            result.Value[1].OrderID.Should().Be(1);
+            result.Value[0].CustomerCompanyName.Should().Be("Alfreds Futterkiste");
         }
+
+        #endregion
+
+        #region LookupOrders tests
+
+        #endregion
+
+        #region GetOrderByIDAsync tests
+
+        [Fact]
+        public async Task GetOrderByIDAsync_ExistingOrderID_ReturnsOrderViewAndDetails()
+        {
+            // Arrange
+            using (var seedContext = CreateContext())
+            {
+                seedContext.Orders.Add(new Order
+                {
+                    OrderID = 300,
+                    CustomerID = "ALFKI"
+                });
+                await seedContext.SaveChangesAsync();
+            }
+
+            using var context = CreateContext();
+            var service = new OrderService(context);
+
+            // Act
+            var result = await service.GetOrderByIDAsync(300);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().NotBeNull();
+            result.Value.OrderID.Should().Be(300);
+            result.Value.CustomerID.Should().Be("ALFKI");
+        }
+
+        [Fact]
+        public async Task GetOrderByIDAsync_NonExistentOrderID_ReturnsMissingOrderError()
+        {
+            // Arrange
+            using var context = CreateContext();
+            var service = new OrderService(context);
+
+            // Act
+            var result = await service.GetOrderByIDAsync(99999);
+
+            // Assert
+            result.IsFailure.Should().BeTrue();
+            result.Errors.Should().ContainSingle(e => e.Code == "Missing Order");
+        }
+
+        #endregion
+
+        #region AddEditOrderAsync tests
+
+        #endregion
+
+        #region DeleteOrderAsync tests
+
+        #endregion
+
+        #region GetOrderDetailsAsync tests
+
+        #endregion
+
+        #region GetCustomersAsync tests
+
+        #endregion
+
+        #region GetEmployeesAsync tests
+
+        #endregion
+
+        #region GetShippersAsync tests
+
+        #endregion
+
+        #region GetProductsAsync tests
 
         #endregion
     }
