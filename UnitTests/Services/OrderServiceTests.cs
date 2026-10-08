@@ -33,7 +33,7 @@ namespace UnitTests.Services
             // Congifuring DbContext to use the open SQLite connection
             var options = new DbContextOptionsBuilder<NorthwindContext>().UseSqlite(_connection).Options;
 
-            _context = new NorthwindContext(options);
+            _context = new TestNorthwindContext(options);
 
             // Create DB schema (tables & keys)
             _context.Database.EnsureCreated();
@@ -56,7 +56,7 @@ namespace UnitTests.Services
         {
             var options = new DbContextOptionsBuilder<NorthwindContext>().UseSqlite(_connection).Options;
 
-            return new NorthwindContext(options);
+            return new TestNorthwindContext(options);
         }
 
         [Fact]
@@ -193,7 +193,7 @@ namespace UnitTests.Services
         }
 
         [Fact]
-        public async Task LookupOrders_WhenNoMatchesFound_ReturnsSuccessWithEmptyList()
+        public async Task LookupOrders_WhenNoMatchesFound_ReturnsNoRecordsLocatedError()
         {
             // Arrange
             using var context = CreateContext();
@@ -203,9 +203,8 @@ namespace UnitTests.Services
             var result = await service.LookupOrders("NONEXISTENT");
 
             // Assert
-            result.IsSuccess.Should().BeTrue();
-            result.Value.Should().NotBeNull();
-            result.Value.Should().BeEmpty();
+            result.IsFailure.Should().BeTrue();
+            result.Errors.Should().ContainSingle(e => e.Code == "No Records Located");
         }
 
         #endregion
@@ -218,6 +217,7 @@ namespace UnitTests.Services
             // Arrange
             using (var seedContext = CreateContext())
             {
+                seedContext.Customers.Add(new Customer { CustomerID = "ALFKI", CompanyName = "Alfreds Futterkiste" });
                 seedContext.Orders.Add(new Order
                 {
                     OrderID = 300,
@@ -324,6 +324,7 @@ namespace UnitTests.Services
             using (var seedContext = CreateContext())
             {
                 seedContext.Customers.Add(new Customer { CustomerID = "ALFKI", CompanyName = "Alfreds Futterkiste" });
+                seedContext.Employees.Add(new Employee { EmployeeID = 1, FirstName = "Nancy", LastName = "Davolio" });
                 seedContext.Products.Add(new Product { ProductID = 1, ProductName = "Chai", UnitPrice = 18.00m, UnitsInStock = 10, Discontinued = false });
                 await seedContext.SaveChangesAsync();
             }
@@ -332,6 +333,7 @@ namespace UnitTests.Services
             {
                 OrderID = 0,
                 CustomerID = "ALFKI",
+                EmployeeID = 1,
                 OrderDate = DateTime.Today
             };
 
@@ -341,7 +343,6 @@ namespace UnitTests.Services
             var service = new OrderService(context);
 
             // Act
-            var result = await service.AddEditOrderAsync(orderView, details);
             var addResult = await service.AddEditOrderAsync(orderView, details);
 
             // Assert
@@ -362,6 +363,13 @@ namespace UnitTests.Services
             // Arrange - Create an existing order with two line items
             using (var seedContext = CreateContext())
             {
+                seedContext.Customers.Add(new Customer { CustomerID = "ALFKI", CompanyName = "Alfreds Futterkiste" });
+                seedContext.Employees.Add(new Employee { EmployeeID = 1, FirstName = "Nancy", LastName = "Davolio" });
+                seedContext.Products.AddRange(
+                    new Product { ProductID = 1, ProductName = "Chai", UnitPrice = 10.00m, Discontinued = false },
+                    new Product { ProductID = 2, ProductName = "Chang", UnitPrice = 20.00m, Discontinued = false },
+                    new Product { ProductID = 3, ProductName = "Aniseed Syrup", UnitPrice = 15.00m, Discontinued = false }
+                );
                 seedContext.Orders.Add(new Order
                 {
                     OrderID = 100,
@@ -443,6 +451,9 @@ namespace UnitTests.Services
             // Arrange
             using (var seedContext = CreateContext())
             {
+                seedContext.Customers.Add(new Customer { CustomerID = "ALFKI", CompanyName = "Alfreds Futterkiste" });
+                seedContext.Products.Add(new Product { ProductID = 1, ProductName = "Chai", UnitPrice = 10.00m, Discontinued = false });
+
                 var order = new Order
                 {
                     OrderID = 500,
@@ -480,6 +491,7 @@ namespace UnitTests.Services
             // Arrange
             using (var seedContext = CreateContext())
             {
+                seedContext.Customers.Add(new Customer { CustomerID = "ALFKI", CompanyName = "Alfreds Futterkiste" });
                 seedContext.Products.AddRange(
                     new Product { ProductID = 1, ProductName = "Chai", UnitPrice = 18.00m, UnitsInStock = 10, Discontinued = false },
                     new Product { ProductID = 2, ProductName = "Chang", UnitPrice = 19.00m, UnitsInStock = 20, Discontinued = false }
@@ -559,7 +571,7 @@ namespace UnitTests.Services
             result.IsSuccess.Should().BeTrue();
             var customers = result.Value.ToList();
             customers.Should().HaveCount(2);
-            customers.First().CompanyName.Should().Be("A Company");
+            customers.First().CompanyName.Should().Be("Alfreds Futterkiste");
         }
 
         #endregion

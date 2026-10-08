@@ -68,7 +68,9 @@ namespace OLTPSystem.BLL
             }
             else
             {
-                query = query.Where(o => o.CustomerID.Contains(searchTerm));
+                // Case-insensitive partial match, independent of the database collation
+                string cleanTerm = searchTerm.Trim().ToLower();
+                query = query.Where(o => o.CustomerID.ToLower().Contains(cleanTerm));
             }
 
             var results = await query.Select(o => new OrderView
@@ -122,7 +124,7 @@ namespace OLTPSystem.BLL
 
             if (order == null)
             {
-                result.AddError(new Error("No Order", $"No order was found with ID: {orderID}"));
+                result.AddError(new Error("Missing Order",$"No order was found with ID: {orderID}"));
                 return result;
             }
 
