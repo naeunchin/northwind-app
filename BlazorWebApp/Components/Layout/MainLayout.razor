@@ -6,7 +6,7 @@
 <MudSnackbarProvider />
 <MudLayout>
     <MudAppBar Elevation="1">
-        <MudStaticNavDrawerToggle DrawerId="nav-drawer" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" />
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(() => _drawerOpen = !_drawerOpen)" />
         <MudText Typo="Typo.h5" Class="ml-3">Northwind</MudText>
         <MudSpacer />
         <MudToggleIconButton @bind-Toggled="_isDarkMode" Icon="@Icons.Material.Filled.ShieldMoon" Color="Color.Warning" ToggledIcon="@Icons.Material.Filled.WbSunny" />
