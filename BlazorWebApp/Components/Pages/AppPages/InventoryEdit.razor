@@ -27,7 +27,7 @@
                                   Variant="Variant.Outlined"
                                   Required="true"
                                   RequiredError="Product name is required."
-                                  MaxLength="40"
+                                  MaxLength="@ProductService.ProductNameMaxLength"
                                   Immediate="true" />
 
                     <MudSelect @bind-Value="editProduct.CategoryID"
