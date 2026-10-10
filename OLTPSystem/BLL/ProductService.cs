@@ -15,14 +15,14 @@ namespace OLTPSystem.BLL
     public class ProductService
     {
         #region Data context setup
-        private readonly NorthwindContext _context;
+        private readonly IDbContextFactory<NorthwindContext> _contextFactory;
 
         // Matches the nvarchar(40) ProductName column
         public const int ProductNameMaxLength = 40;
 
-        public ProductService(NorthwindContext context)
+        public ProductService(IDbContextFactory<NorthwindContext> contextFactory)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
         }
         #endregion
 
@@ -32,9 +32,11 @@ namespace OLTPSystem.BLL
         /// <returns>A BYS Result container wrapping a list of Product view or error messages.</returns>
         public async Task<Result<List<ProductView>>> GetProductsAsync()
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             var result = new Result<List<ProductView>>();
 
-            var products = await _context.Products.Select(p => new ProductView
+            var products = await context.Products.Select(p => new ProductView
             {
                 ProductID = p.ProductID,
                 ProductName = p.ProductName,
@@ -66,6 +68,8 @@ namespace OLTPSystem.BLL
         /// <returns>A BYS Result container wrapping a list of matching ProductView records or error messages.</returns>
         public async Task<Result<List<ProductView>>> LookupProducts(string productName)
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             var result = new Result<List<ProductView>>();
 
             if (string.IsNullOrWhiteSpace(productName)) 
@@ -74,7 +78,7 @@ namespace OLTPSystem.BLL
                 return result;
             }
 
-            var products = await _context.Products
+            var products = await context.Products
                 .Where(p => p.ProductName.ToLower().Contains(productName.ToLower()))
                 .Select(p => new ProductView
                  {
@@ -108,6 +112,8 @@ namespace OLTPSystem.BLL
         /// <returns>A BYS Result container wrapping a list containing the single matching ProductView.</returns>
         public async Task<Result<List<ProductView>>> LookupProducts(int productID)
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             var result = new Result<List<ProductView>>();
 
             if (productID <= 0)
@@ -116,7 +122,7 @@ namespace OLTPSystem.BLL
                 return result;
             }
 
-            var products = await _context.Products
+            var products = await context.Products
                 .Where(p => p.ProductID == productID)
                 .Select(p => new ProductView
                 {
@@ -150,9 +156,11 @@ namespace OLTPSystem.BLL
         /// <returns>A BYS Result container wrapping a list containing a single ProductView by its primary key.</returns>
         public async Task<Result<ProductView>> GetProductByIDAsync(int productID)
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             var result = new Result<ProductView>();
 
-            var product = await _context.Products
+            var product = await context.Products
                                                 .Where(p => p.ProductID == productID)
                                                 .Select(p => new ProductView
                                                 {
@@ -186,6 +194,8 @@ namespace OLTPSystem.BLL
         /// <returns>A BYS Result container wrapping the refreshed product state or errors.</returns>
         public async Task<Result<ProductView>> AddEditProduct(ProductView editProduct)
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             var result = new Result<ProductView>();
 
             if (editProduct == null)
@@ -226,7 +236,7 @@ namespace OLTPSystem.BLL
             // Skipped when the name is missing, which is already reported above
             if (!string.IsNullOrWhiteSpace(editProduct.ProductName))
             {
-                bool existingProduct = await _context.Products
+                bool existingProduct = await context.Products
                                                      .AnyAsync(x => x.ProductName.ToLower() == editProduct.ProductName.ToLower() && x.ProductID != editProduct.ProductID);
 
                 if (existingProduct)
@@ -240,7 +250,7 @@ namespace OLTPSystem.BLL
                 return result;
             #endregion
 
-            Product? product = await _context.Products.Where(x => x.ProductID == editProduct.ProductID).FirstOrDefaultAsync();
+            Product? product = await context.Products.Where(x => x.ProductID == editProduct.ProductID).FirstOrDefaultAsync();
 
             if (product == null && editProduct.ProductID == 0)
             {
@@ -263,18 +273,17 @@ namespace OLTPSystem.BLL
             product.Discontinued = editProduct.Discontinued;
 
             if (product.ProductID == 0)
-                _context.Products.Add(product);
+                context.Products.Add(product);
             else
-                _context.Products.Update(product);
+                context.Products.Update(product);
 
             try
             {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
                 return await GetProductByIDAsync(product.ProductID);
             }
             catch (Exception ex)
             {
-                _context.ChangeTracker.Clear();
                 result.AddError(new Error("Error Saving Changes", ex.InnerException?.Message ?? string.Empty));
                 return result;
             }
@@ -286,8 +295,10 @@ namespace OLTPSystem.BLL
         /// <returns>A list of categories.</returns>
         public async Task<Result<List<CategoryView>>> GetCategoriesAsync()
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             var result = new Result<List<CategoryView>>();
-            var data = await _context.Categories.Select(c => new CategoryView
+            var data = await context.Categories.Select(c => new CategoryView
             {
                 CategoryID = c.CategoryID,
                 CategoryName = c.CategoryName
@@ -302,8 +313,10 @@ namespace OLTPSystem.BLL
         /// <returns>A list of suppliers.</returns>
         public async Task<Result<List<SupplierView>>> GetSuppliersAsync()
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             var result = new Result<List<SupplierView>>();
-            var data = await _context.Suppliers.Select(s => new SupplierView
+            var data = await context.Suppliers.Select(s => new SupplierView
             {
                 SupplierID = s.SupplierID,
                 SupplierCompanyName = s.CompanyName

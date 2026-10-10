@@ -61,8 +61,7 @@ namespace IntegrationTests.Services
             // Arrange
             await SeedLookupDataAsync();
 
-            await using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(ContextFactory);
 
             var items = new List<OrderDetailView>
             {
@@ -92,8 +91,7 @@ namespace IntegrationTests.Services
             // Arrange - the header and line items save in one transaction, so a bad line item must not leave an orphaned order
             await SeedLookupDataAsync();
 
-            await using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(ContextFactory);
 
             var items = new List<OrderDetailView>
             {
@@ -121,8 +119,7 @@ namespace IntegrationTests.Services
             await SeedLookupDataAsync();
             var order = await SeedOrderAsync(new DateTime(2026, 10, 1), _chai, _chang);
 
-            await using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(ContextFactory);
 
             // Chai modified, Chang removed, Aniseed Syrup added
             var items = new List<OrderDetailView>
@@ -157,8 +154,7 @@ namespace IntegrationTests.Services
             var order = await SeedOrderAsync(new DateTime(2026, 10, 1), _chai, _chang);
             var otherOrder = await SeedOrderAsync(new DateTime(2026, 10, 2), _chai);
 
-            await using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(ContextFactory);
 
             // Act
             var result = await service.DeleteOrderAsync(order.OrderID);
@@ -184,8 +180,7 @@ namespace IntegrationTests.Services
             var older = await SeedOrderAsync(new DateTime(2026, 1, 10), _chai);
             var newer = await SeedOrderAsync(new DateTime(2026, 5, 20), _chai);
 
-            await using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(ContextFactory);
 
             // Act
             var result = await service.GetOrdersAsync();
@@ -206,8 +201,7 @@ namespace IntegrationTests.Services
             var alfredsOrder = await SeedOrderAsync(new DateTime(2026, 10, 1), _chai);
             await SeedAsync(new Order { CustomerID = _bolido.CustomerID, EmployeeID = _nancy.EmployeeID, OrderDate = new DateTime(2026, 10, 1) });
 
-            await using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(ContextFactory);
 
             // Act
             var result = await service.LookupOrders("alf");
@@ -224,8 +218,7 @@ namespace IntegrationTests.Services
             await SeedLookupDataAsync();
             var order = await SeedOrderAsync(new DateTime(2026, 10, 1), _chai, _chang);
 
-            await using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(ContextFactory);
 
             // Act
             var result = await service.GetOrderDetailsAsync(order.OrderID);

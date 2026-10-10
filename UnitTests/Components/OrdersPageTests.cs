@@ -29,7 +29,7 @@ namespace UnitTests.Components
                 context.Database.EnsureCreated();
             }
 
-            Services.AddScoped(_ => new OrderService(CreateContext()));
+            Services.AddScoped(_ => new OrderService(new TestDbContextFactory(_connection)));
 
             RenderMudProviders();
         }

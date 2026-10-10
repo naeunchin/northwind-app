@@ -9,19 +9,12 @@ namespace OLTPSystem
     {
         public static IServiceCollection OLTPDependencies(this IServiceCollection services, Action<DbContextOptionsBuilder> options)
         {
-            services.AddDbContext<NorthwindContext>(options);
+            // Blazor Server scopes live for the whole circuit, so services create a short-lived context per operation
+            // instead of sharing one scoped context across every call the user makes
+            services.AddDbContextFactory<NorthwindContext>(options);
 
-            services.AddScoped<OrderService>((ServiceProvider) =>
-            {
-                var context = ServiceProvider.GetService<NorthwindContext>();
-                return context == null ? throw new InvalidOperationException("NorthwindContext is not registered.") : new OrderService(context);
-            });
-
-            services.AddScoped<ProductService>((ServiceProvider) =>
-            {
-                var context = ServiceProvider.GetService<NorthwindContext>();
-                return context == null ? throw new InvalidOperationException("NorthwindContext is not registered.") : new ProductService(context);
-            });
+            services.AddScoped<OrderService>();
+            services.AddScoped<ProductService>();
 
             return services;
         }

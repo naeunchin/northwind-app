@@ -10,7 +10,7 @@ namespace IntegrationTests.Infrastructure
     /// Starts one SQL Server container for the whole test run, builds the Northwind schema from the EF model,
     /// and resets the data between tests with Respawn.
     /// </summary>
-    public class DatabaseFixture : IAsyncLifetime
+    public class DatabaseFixture : IAsyncLifetime, IDbContextFactory<NorthwindContext>
     {
         private readonly MsSqlContainer _container = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest").Build();
 
@@ -18,7 +18,10 @@ namespace IntegrationTests.Infrastructure
 
         public string ConnectionString => _container.GetConnectionString();
 
-        public NorthwindContext CreateContext()
+        /// <summary>
+        /// Creates a new context against the container. The fixture doubles as the IDbContextFactory passed to services.
+        /// </summary>
+        public NorthwindContext CreateDbContext()
         {
             var options = new DbContextOptionsBuilder<NorthwindContext>().UseSqlServer(ConnectionString).Options;
 
@@ -30,7 +33,7 @@ namespace IntegrationTests.Infrastructure
             await _container.StartAsync();
 
             // The project has no migrations, so the schema is created straight from the scaffolded model
-            await using (var context = CreateContext())
+            await using (var context = CreateDbContext())
             {
                 await context.Database.EnsureCreatedAsync();
             }

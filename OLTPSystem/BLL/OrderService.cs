@@ -14,11 +14,11 @@ namespace OLTPSystem.BLL
     public class OrderService
     {
         #region Data context setup
-        private readonly NorthwindContext _context;
+        private readonly IDbContextFactory<NorthwindContext> _contextFactory;
 
-        public OrderService(NorthwindContext context)
+        public OrderService(IDbContextFactory<NorthwindContext> contextFactory)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
         }
         #endregion
 
@@ -28,9 +28,11 @@ namespace OLTPSystem.BLL
         /// <returns>A BYS Result container wrapping a list of Order view or error messages.</returns>
         public async Task<Result<List<OrderView>>> GetOrdersAsync()
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             var result = new Result<List<OrderView>>();
 
-            var orders = await _context.Orders.Select(o => new OrderView
+            var orders = await context.Orders.Select(o => new OrderView
                                                     {
                                                         OrderID = o.OrderID,
                                                         CustomerID = o.CustomerID,
@@ -55,12 +57,14 @@ namespace OLTPSystem.BLL
         /// <returns>A BYS Result container wrapping a list of matching OrderView records or error messages.</returns>
         public async Task<Result<List<OrderView>>> LookupOrders(string searchTerm)
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
                 return Result<List<OrderView>>.Failure("Missing Information", "Search term is required.");
             }
 
-            var query = _context.Orders.AsQueryable();
+            var query = context.Orders.AsQueryable();
 
             if (int.TryParse(searchTerm, out int orderId))
             {
@@ -103,9 +107,11 @@ namespace OLTPSystem.BLL
         /// <returns>A BYS Result container wrapping a list containing a single OrderView by its primary key.</returns>
         public async Task<Result<OrderView>> GetOrderByIDAsync(int orderID)
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             var result = new Result<OrderView>();
 
-            var order = await _context.Orders
+            var order = await context.Orders
                                             .Where(o => o.OrderID == orderID)
                                             .Select(o => new OrderView
                                             {
@@ -138,6 +144,8 @@ namespace OLTPSystem.BLL
         /// <returns>A BYS Result container wrapping the refreshed order state or errors.</returns>
         public async Task<Result<OrderView>> AddEditOrderAsync(OrderView editOrder, List<OrderDetailView> orderItems)
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             var result = new Result<OrderView>();
 
             if (editOrder == null)
@@ -160,7 +168,7 @@ namespace OLTPSystem.BLL
                 return result;
             #endregion
 
-            Order? order = await _context.Orders
+            Order? order = await context.Orders
                 .Include(o => o.Order_Details)
                 .Where(o => o.OrderID == editOrder.OrderID)
                 .FirstOrDefaultAsync();
@@ -190,7 +198,7 @@ namespace OLTPSystem.BLL
                 
                 foreach (var stale in removedDetails)
                 {
-                    _context.Order_Details.Remove(stale);
+                    context.Order_Details.Remove(stale);
                 }
             }
 
@@ -216,12 +224,12 @@ namespace OLTPSystem.BLL
 
             if (order.OrderID == 0)
             {
-                _context.Orders.Add(order);
+                context.Orders.Add(order);
             }
 
             try
             {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
                 var refreshQuery = await LookupOrders(order.OrderID.ToString());
                 if (refreshQuery.IsSuccess && refreshQuery.Value.Any())
@@ -234,7 +242,6 @@ namespace OLTPSystem.BLL
             }
             catch (Exception ex)
             {
-                _context.ChangeTracker.Clear();
                 result.AddError(new Error("Error Saving Changes", ex.InnerException?.Message ?? ex.Message));
                 return result;
             }
@@ -247,6 +254,8 @@ namespace OLTPSystem.BLL
         /// <returns>A BYS Result container wrapping the total number of database rows affected.</returns>
         public async Task<Result<int>> DeleteOrderAsync(int orderID)
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             var result = new Result<int>();
 
             if (orderID <= 0)
@@ -255,7 +264,7 @@ namespace OLTPSystem.BLL
                 return result;
             }
 
-            var order = await _context.Orders.Include(o => o.Order_Details).Where(o => o.OrderID == orderID).FirstOrDefaultAsync();
+            var order = await context.Orders.Include(o => o.Order_Details).Where(o => o.OrderID == orderID).FirstOrDefaultAsync();
 
             if (order == null)
             {
@@ -266,21 +275,19 @@ namespace OLTPSystem.BLL
             // Performing a purge of child details lines before dropping the parent Order, since the Northwind database does not have a soft-delete flag (e.g., RemoveFromViewFlag)
             if (order.Order_Details.Any())
             {
-                _context.Order_Details.RemoveRange(order.Order_Details);
+                context.Order_Details.RemoveRange(order.Order_Details);
             }
 
             // Staging the parent order context deletion
-            _context.Orders.Remove(order);
+            context.Orders.Remove(order);
 
             try
             {
-                int rowsAffected = await _context.SaveChangesAsync();
+                int rowsAffected = await context.SaveChangesAsync();
                 return result.WithValue(rowsAffected);
             }
             catch (Exception ex)
             {
-                _context.ChangeTracker.Clear();
-
                 result.AddError(new Error("Error Saving Changes", ex.InnerException?.Message ?? ex.Message));
                 return result;
             }
@@ -292,9 +299,11 @@ namespace OLTPSystem.BLL
         /// <param name="orderID">The unique primary key of the parent order.</param>
         public async Task<Result<List<OrderDetailView>>> GetOrderDetailsAsync(int orderID)
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             var result = new Result<List<OrderDetailView>>();
 
-            var items = await _context.Order_Details
+            var items = await context.Order_Details
                                                 .Include(od => od.Product)
                                                 .Where(od => od.OrderID == orderID)
                                                 .Select(od => new OrderDetailView
@@ -317,9 +326,11 @@ namespace OLTPSystem.BLL
         /// <returns></returns>
         public async Task<Result<List<CustomerLookupView>>> GetCustomersAsync()
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             var result = new Result<List<CustomerLookupView>>();
 
-            var data = await _context.Customers
+            var data = await context.Customers
                                             .Select(c => new CustomerLookupView
                                             {
                                                 CustomerID = c.CustomerID,
@@ -336,9 +347,11 @@ namespace OLTPSystem.BLL
         /// </summary>
         public async Task<Result<List<EmployeeLookupView>>> GetEmployeesAsync()
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             var result = new Result<List<EmployeeLookupView>>();
 
-            var data = await _context.Employees
+            var data = await context.Employees
                                             .Select(e => new EmployeeLookupView
                                             {
                                                 EmployeeID = e.EmployeeID,
@@ -355,9 +368,11 @@ namespace OLTPSystem.BLL
         /// </summary>
         public async Task<Result<List<ShipperLookupView>>> GetShippersAsync()
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             var result = new Result<List<ShipperLookupView>>();
 
-            var data = await _context.Shippers
+            var data = await context.Shippers
                                             .Select(s => new ShipperLookupView
                                             {
                                                 ShipperID = s.ShipperID,
@@ -374,9 +389,11 @@ namespace OLTPSystem.BLL
         /// </summary>
         public async Task<Result<List<ProductView>>> GetProductsAsync()
         {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
             var result = new Result<List<ProductView>>();
 
-            var data = await _context.Products
+            var data = await context.Products
                                             .Where(p => !p.Discontinued)
                                             .Select(p => new ProductView
                                             {

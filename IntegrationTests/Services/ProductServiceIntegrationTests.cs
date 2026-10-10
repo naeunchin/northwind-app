@@ -42,8 +42,7 @@ namespace IntegrationTests.Services
             // Arrange
             await SeedAsync(_beverages, _exoticLiquids);
 
-            await using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(ContextFactory);
 
             // Act
             var result = await service.AddEditProduct(CreateValidProductView());
@@ -69,8 +68,7 @@ namespace IntegrationTests.Services
             var existing = new Product { ProductName = "Chai", CategoryID = _beverages.CategoryID, SupplierID = _exoticLiquids.SupplierID, UnitPrice = 18.00m };
             await SeedAsync(existing);
 
-            await using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(ContextFactory);
 
             var editProduct = CreateValidProductView(productID: existing.ProductID);
             editProduct.UnitPrice = 25.50m;
@@ -95,8 +93,7 @@ namespace IntegrationTests.Services
             await SeedAsync(_beverages, _exoticLiquids);
             await SeedAsync(new Product { ProductName = "Chai", CategoryID = _beverages.CategoryID, SupplierID = _exoticLiquids.SupplierID });
 
-            await using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(ContextFactory);
 
             // Act
             var result = await service.AddEditProduct(CreateValidProductView(productName: "CHAI"));
@@ -112,8 +109,7 @@ namespace IntegrationTests.Services
             // Arrange
             await SeedAsync(_beverages, _exoticLiquids);
 
-            await using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(ContextFactory);
 
             var editProduct = CreateValidProductView();
             editProduct.CategoryID = 999;
@@ -136,8 +132,7 @@ namespace IntegrationTests.Services
             // Arrange
             await SeedAsync(_beverages, _exoticLiquids);
 
-            await using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(ContextFactory);
 
             // Act
             var result = await service.AddEditProduct(CreateValidProductView(productName: new string('A', ProductService.ProductNameMaxLength + 1)));
@@ -156,8 +151,7 @@ namespace IntegrationTests.Services
             // Arrange - guards against ProductNameMaxLength drifting from the nvarchar(40) column
             await SeedAsync(_beverages, _exoticLiquids);
 
-            await using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(ContextFactory);
 
             var productName = new string('A', ProductService.ProductNameMaxLength);
 
@@ -184,8 +178,7 @@ namespace IntegrationTests.Services
                 new Product { ProductName = "Chai", CategoryID = _beverages.CategoryID, SupplierID = _exoticLiquids.SupplierID },
                 new Product { ProductName = "Aniseed Syrup" });
 
-            await using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(ContextFactory);
 
             // Act
             var result = await service.GetProductsAsync();
@@ -213,8 +206,7 @@ namespace IntegrationTests.Services
                 new Product { ProductName = "Chai" },
                 new Product { ProductName = "Ikura" });
 
-            await using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(ContextFactory);
 
             // Act
             var result = await service.LookupProducts("CHA");
@@ -234,8 +226,7 @@ namespace IntegrationTests.Services
                 new Supplier { CompanyName = "Tokyo Traders" },
                 new Supplier { CompanyName = "Exotic Liquids" });
 
-            await using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(ContextFactory);
 
             // Act
             var categories = await service.GetCategoriesAsync();

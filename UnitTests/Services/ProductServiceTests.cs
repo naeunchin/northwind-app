@@ -17,6 +17,7 @@ namespace UnitTests.Services
     {
         private readonly NorthwindContext _context;
         private readonly SqliteConnection _connection;
+        private readonly TestDbContextFactory _contextFactory;
 
         public ProductServiceTests()
         {
@@ -31,6 +32,7 @@ namespace UnitTests.Services
 
             // Create DB schema (tables & keys)
             _context.Database.EnsureCreated();
+            _contextFactory = new TestDbContextFactory(_connection);
         }
 
         public void Dispose()
@@ -47,9 +49,7 @@ namespace UnitTests.Services
         /// <returns>DbContext instance</returns>
         private NorthwindContext CreateContext()
         {
-            var options = new DbContextOptionsBuilder<NorthwindContext>().UseSqlite(_connection).Options;
-
-            return new TestNorthwindContext(options);
+            return _contextFactory.CreateDbContext();
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace UnitTests.Services
             Action act = () => new ProductService(null!);
 
             // Assert
-            act.Should().Throw<ArgumentNullException>().WithParameterName("context");
+            act.Should().Throw<ArgumentNullException>().WithParameterName("contextFactory");
         }
 
         #region GetProductsAsync tests
@@ -96,8 +96,7 @@ namespace UnitTests.Services
         public async Task GetProductsAsync_WhenNoProductsExist_ReturnsNoRecordsFoundError()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.GetProductsAsync();
@@ -121,8 +120,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.GetProductsAsync();
@@ -146,8 +144,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.GetProductsAsync();
@@ -170,8 +167,7 @@ namespace UnitTests.Services
         public async Task LookupProducts_NullOrWhitespaceName_ReturnsMissingInformationError(string? productName)
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.LookupProducts(productName!);
@@ -195,8 +191,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.LookupProducts("CHA");
@@ -216,8 +211,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.LookupProducts("NONEXISTENT");
@@ -237,8 +231,7 @@ namespace UnitTests.Services
         public async Task LookupProducts_NonPositiveID_ReturnsInvalidIDError(int productID)
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.LookupProducts(productID);
@@ -261,8 +254,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.LookupProducts(2);
@@ -277,8 +269,7 @@ namespace UnitTests.Services
         public async Task LookupProducts_NonExistentID_ReturnsNotFoundError()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.LookupProducts(99999);
@@ -315,8 +306,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.GetProductByIDAsync(1);
@@ -344,8 +334,7 @@ namespace UnitTests.Services
         public async Task GetProductByIDAsync_NonExistentID_ReturnsNoProductError()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.GetProductByIDAsync(99999);
@@ -363,8 +352,7 @@ namespace UnitTests.Services
         public async Task AddEditProduct_NullProduct_ReturnsMissingInformationError()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.AddEditProduct(null!);
@@ -378,8 +366,7 @@ namespace UnitTests.Services
         public async Task AddEditProduct_MissingNameCategoryAndSupplier_ReturnsThreeMissingInformationErrors()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             var editProduct = CreateValidProductView(productName: "   ");
             editProduct.CategoryID = null;
@@ -398,8 +385,7 @@ namespace UnitTests.Services
         public async Task AddEditProduct_NullProductName_ReturnsMissingInformationErrorWithoutThrowing()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             var editProduct = CreateValidProductView(productName: null!);
 
@@ -418,8 +404,7 @@ namespace UnitTests.Services
             // Arrange
             await SeedCategoryAndSupplierAsync();
 
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             var editProduct = CreateValidProductView(productName: new string('A', ProductService.ProductNameMaxLength + 1));
 
@@ -441,8 +426,7 @@ namespace UnitTests.Services
             // Arrange
             await SeedCategoryAndSupplierAsync();
 
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             var productName = new string('A', ProductService.ProductNameMaxLength);
 
@@ -458,8 +442,7 @@ namespace UnitTests.Services
         public async Task AddEditProduct_NegativeNumericValues_ReturnsFourInvalidValueErrors()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             var editProduct = CreateValidProductView();
             editProduct.UnitPrice = -0.01m;
@@ -487,8 +470,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.AddEditProduct(CreateValidProductView(productName: "CHAI"));
@@ -507,8 +489,7 @@ namespace UnitTests.Services
             // Arrange
             await SeedCategoryAndSupplierAsync();
 
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.AddEditProduct(CreateValidProductView(productID: 999));
@@ -524,8 +505,7 @@ namespace UnitTests.Services
             // Arrange
             await SeedCategoryAndSupplierAsync();
 
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.AddEditProduct(CreateValidProductView());
@@ -556,8 +536,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Same name as its own row must not trigger the duplicate check
             var editProduct = CreateValidProductView(productID: 1);
@@ -585,8 +564,7 @@ namespace UnitTests.Services
             // Arrange - SQLite enforces foreign keys, so the insert fails on save
             await SeedCategoryAndSupplierAsync();
 
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             var editProduct = CreateValidProductView();
             editProduct.CategoryID = 999;
@@ -597,7 +575,6 @@ namespace UnitTests.Services
             // Assert
             result.IsFailure.Should().BeTrue();
             result.Errors.Should().ContainSingle(e => e.Code == "Error Saving Changes");
-            context.ChangeTracker.Entries().Should().BeEmpty();
 
             using var verifyContext = CreateContext();
             (await verifyContext.Products.CountAsync()).Should().Be(0);
@@ -620,8 +597,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.GetCategoriesAsync();
@@ -635,8 +611,7 @@ namespace UnitTests.Services
         public async Task GetCategoriesAsync_WhenNoCategoriesExist_ReturnsEmptyList()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.GetCategoriesAsync();
@@ -663,8 +638,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.GetSuppliersAsync();
@@ -678,8 +652,7 @@ namespace UnitTests.Services
         public async Task GetSuppliersAsync_WhenNoSuppliersExist_ReturnsEmptyList()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new ProductService(context);
+            var service = new ProductService(_contextFactory);
 
             // Act
             var result = await service.GetSuppliersAsync();

@@ -21,8 +21,8 @@ namespace UnitTests.Services
     public class OrderServiceTests : IDisposable
     {
         private readonly NorthwindContext _context;
-        private readonly OrderService _service;
         private readonly SqliteConnection _connection;
+        private readonly TestDbContextFactory _contextFactory;
         
         public OrderServiceTests()
         {
@@ -37,7 +37,7 @@ namespace UnitTests.Services
 
             // Create DB schema (tables & keys)
             _context.Database.EnsureCreated();
-            _service = new OrderService(_context);
+            _contextFactory = new TestDbContextFactory(_connection);
         }
 
         public void Dispose()
@@ -54,9 +54,7 @@ namespace UnitTests.Services
         /// <returns>DbContext instance</returns>
         private NorthwindContext CreateContext()
         {
-            var options = new DbContextOptionsBuilder<NorthwindContext>().UseSqlite(_connection).Options;
-
-            return new TestNorthwindContext(options);
+            return _contextFactory.CreateDbContext();
         }
 
         [Fact]
@@ -66,7 +64,7 @@ namespace UnitTests.Services
             Action act = () => new OrderService(null!);
 
             // Assert 
-            act.Should().Throw<ArgumentNullException>().WithParameterName("context");
+            act.Should().Throw<ArgumentNullException>().WithParameterName("contextFactory");
         }
 
         #region GetOrdersAsync tests
@@ -75,8 +73,7 @@ namespace UnitTests.Services
         public async Task GetOrdersAsync_WhenNoOrdersExist_ReturnsSuccessWithEmptyList()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.GetOrdersAsync();
@@ -101,8 +98,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.GetOrdersAsync();
@@ -126,8 +122,7 @@ namespace UnitTests.Services
         public async Task LookupOrders_NullOrWhitespaceSearchTerm_ReturnsMissingInformationError(string? searchTerm)
         {
             // Arrange 
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.LookupOrders(searchTerm!);
@@ -151,8 +146,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act 
             var result = await service.LookupOrders("101");
@@ -180,8 +174,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.LookupOrders("alf");
@@ -196,8 +189,7 @@ namespace UnitTests.Services
         public async Task LookupOrders_WhenNoMatchesFound_ReturnsNoRecordsLocatedError()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.LookupOrders("NONEXISTENT");
@@ -226,8 +218,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.GetOrderByIDAsync(300);
@@ -243,8 +234,7 @@ namespace UnitTests.Services
         public async Task GetOrderByIDAsync_NonExistentOrderID_ReturnsMissingOrderError()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.GetOrderByIDAsync(99999);
@@ -262,8 +252,7 @@ namespace UnitTests.Services
         public async Task AddEditOrderAsync_NullEditOrder_ReturnsMissingInformationError()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.AddEditOrderAsync(null!, new List<OrderDetailView>());
@@ -277,8 +266,7 @@ namespace UnitTests.Services
         public async Task AddEditOrderAsync_MissingRequiredFields_ReturnsValidationFailures()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             var editOrder = new OrderView
             {
@@ -298,8 +286,7 @@ namespace UnitTests.Services
         public async Task AddEditOrderAsync_NonExistentOrderID_ReturnsCannotFindOrderError()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             var editOrder = new OrderView
             {
@@ -339,8 +326,7 @@ namespace UnitTests.Services
 
             var details = new List<OrderDetailView> { new OrderDetailView { ProductID = 1, UnitPrice = 18.00m, Quantity = 2, Discount = 0 } };
 
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var addResult = await service.AddEditOrderAsync(orderView, details);
@@ -384,8 +370,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act - Submit updated items: Product 1 modified (quantity 5), Product 2 removed, Product 3 added
             var updatedItems = new List<OrderDetailView>
@@ -419,8 +404,7 @@ namespace UnitTests.Services
         public async Task DeleteOrderAsync_InvalidOrderID_ReturnsMissingInformationError()
         {
             // Arrange 
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act 
             var result = await service.DeleteOrderAsync(0);
@@ -434,8 +418,7 @@ namespace UnitTests.Services
         public async Task DeleteOrderAsync_OrderDoesNotExist_ReturnsMissingOrderError()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.DeleteOrderAsync(999);
@@ -464,8 +447,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.DeleteOrderAsync(500);
@@ -510,8 +492,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.GetOrderDetailsAsync(100);
@@ -532,8 +513,7 @@ namespace UnitTests.Services
         public async Task GetOrderDetailsAsync_NonExistentOrderID_ReturnsEmptyList()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.GetOrderDetailsAsync(99999);
@@ -561,8 +541,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.GetCustomersAsync();
@@ -591,8 +570,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.GetEmployeesAsync();
@@ -624,8 +602,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.GetShippersAsync();
@@ -656,8 +633,7 @@ namespace UnitTests.Services
                 await seedContext.SaveChangesAsync();
             }
 
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.GetProductsAsync();
@@ -675,8 +651,7 @@ namespace UnitTests.Services
         public async Task GetProductsAsync_WhenNoProductsExist_ReturnsEmptyList()
         {
             // Arrange
-            using var context = CreateContext();
-            var service = new OrderService(context);
+            var service = new OrderService(_contextFactory);
 
             // Act
             var result = await service.GetProductsAsync();
