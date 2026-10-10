@@ -131,21 +131,44 @@ namespace IntegrationTests.Services
         }
 
         [Fact]
-        public async Task AddEditProduct_NameLongerThanColumn_ReturnsTruncationError()
+        public async Task AddEditProduct_NameLongerThanColumn_ReturnsValidationErrorBeforeSaving()
         {
-            // Arrange - ProductName is nvarchar(40); the service doesn't check length, so SQL Server rejects it
+            // Arrange
             await SeedAsync(_beverages, _exoticLiquids);
 
             await using var context = CreateContext();
             var service = new ProductService(context);
 
             // Act
-            var result = await service.AddEditProduct(CreateValidProductView(productName: new string('A', 41)));
+            var result = await service.AddEditProduct(CreateValidProductView(productName: new string('A', ProductService.ProductNameMaxLength + 1)));
+
+            // Assert - caught by validation rather than SQL Server's truncation error
+            result.IsFailure.Should().BeTrue();
+            result.Errors.Should().ContainSingle().Which.Code.Should().Be("Invalid Value");
+
+            await using var verifyContext = CreateContext();
+            (await verifyContext.Products.AnyAsync()).Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task AddEditProduct_NameAtMaxLength_FitsColumn()
+        {
+            // Arrange - guards against ProductNameMaxLength drifting from the nvarchar(40) column
+            await SeedAsync(_beverages, _exoticLiquids);
+
+            await using var context = CreateContext();
+            var service = new ProductService(context);
+
+            var productName = new string('A', ProductService.ProductNameMaxLength);
+
+            // Act
+            var result = await service.AddEditProduct(CreateValidProductView(productName: productName));
 
             // Assert
-            result.IsFailure.Should().BeTrue();
-            result.Errors.Should().ContainSingle(e => e.Code == "Error Saving Changes")
-                .Which.Message.Should().Contain("truncated");
+            result.IsSuccess.Should().BeTrue();
+
+            await using var verifyContext = CreateContext();
+            (await verifyContext.Products.SingleAsync()).ProductName.Should().Be(productName);
         }
 
         #endregion

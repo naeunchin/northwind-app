@@ -17,6 +17,9 @@ namespace OLTPSystem.BLL
         #region Data context setup
         private readonly NorthwindContext _context;
 
+        // Matches the nvarchar(40) ProductName column
+        public const int ProductNameMaxLength = 40;
+
         public ProductService(NorthwindContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -196,6 +199,8 @@ namespace OLTPSystem.BLL
             // Mandatory string fields
             if (string.IsNullOrWhiteSpace(editProduct.ProductName))
                 result.AddError(new Error("Missing Information", "Product name is required."));
+            else if (editProduct.ProductName.Length > ProductNameMaxLength)
+                result.AddError(new Error("Invalid Value", $"Product name cannot be longer than {ProductNameMaxLength} characters."));
 
             // FK relationships must be explicitly mapped 
             if (editProduct.CategoryID == null || editProduct.CategoryID <= 0)

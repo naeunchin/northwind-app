@@ -413,6 +413,48 @@ namespace UnitTests.Services
         }
 
         [Fact]
+        public async Task AddEditProduct_NameLongerThanMaxLength_ReturnsInvalidValueError()
+        {
+            // Arrange
+            await SeedCategoryAndSupplierAsync();
+
+            using var context = CreateContext();
+            var service = new ProductService(context);
+
+            var editProduct = CreateValidProductView(productName: new string('A', ProductService.ProductNameMaxLength + 1));
+
+            // Act
+            var result = await service.AddEditProduct(editProduct);
+
+            // Assert
+            result.IsFailure.Should().BeTrue();
+            result.Errors.Should().ContainSingle()
+                .Which.Code.Should().Be("Invalid Value");
+
+            using var verifyContext = CreateContext();
+            (await verifyContext.Products.CountAsync()).Should().Be(0);
+        }
+
+        [Fact]
+        public async Task AddEditProduct_NameAtMaxLength_Succeeds()
+        {
+            // Arrange
+            await SeedCategoryAndSupplierAsync();
+
+            using var context = CreateContext();
+            var service = new ProductService(context);
+
+            var productName = new string('A', ProductService.ProductNameMaxLength);
+
+            // Act
+            var result = await service.AddEditProduct(CreateValidProductView(productName: productName));
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.ProductName.Should().Be(productName);
+        }
+
+        [Fact]
         public async Task AddEditProduct_NegativeNumericValues_ReturnsFourInvalidValueErrors()
         {
             // Arrange
