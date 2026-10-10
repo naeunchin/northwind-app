@@ -164,7 +164,7 @@ namespace OLTPSystem.BLL
                                                     ReorderLevel = p.ReorderLevel,
                                                     Discontinued = p.Discontinued,
                                                     CategoryName = p.Category != null ? p.Category.CategoryName : "Uncategorized",
-                                                    SupplierCompanyName = p.Supplier != null ? p.Supplier.CompanyName : "No Supplier listed"
+                                                    SupplierCompanyName = p.Supplier != null ? p.Supplier.CompanyName : "No Supplier Listed"
                                                 })
                                                 .FirstOrDefaultAsync();
             if (product == null)
@@ -217,13 +217,17 @@ namespace OLTPSystem.BLL
             if (editProduct.ReorderLevel != null && editProduct.ReorderLevel < 0)
                 result.AddError(new Error("Invalid Value", "Reorder Threshold safety levels cannot be negative."));
 
-            // Duplicate record check: A product name cannot match an existing item unless it belongs to the row currently being edited 
-            bool existingProduct = await _context.Products
-                                                 .AnyAsync(x => x.ProductName.ToLower() == editProduct.ProductName.ToLower() && x.ProductID != editProduct.ProductID);
-
-            if (existingProduct)
+            // Duplicate record check: A product name cannot match an existing item unless it belongs to the row currently being edited
+            // Skipped when the name is missing, which is already reported above
+            if (!string.IsNullOrWhiteSpace(editProduct.ProductName))
             {
-                result.AddError(new Error("Duplicate Data Warning", $"An inventory item named {editProduct.ProductName} already exists in the database and cannot be entered again."));
+                bool existingProduct = await _context.Products
+                                                     .AnyAsync(x => x.ProductName.ToLower() == editProduct.ProductName.ToLower() && x.ProductID != editProduct.ProductID);
+
+                if (existingProduct)
+                {
+                    result.AddError(new Error("Duplicate Data Warning", $"An inventory item named {editProduct.ProductName} already exists in the database and cannot be entered again."));
+                }
             }
 
             // If any validation checks failed, exit early and display the errors 
