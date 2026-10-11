@@ -18,13 +18,17 @@ namespace UnitTests.Components
         private const int SeededOrderID = 10248;
 
         /// <summary>
-        /// Seeds lookup data plus order 10248 containing Chai (ID 1, qty 2) and Chang (ID 2, qty 5 at 10% off).
+        /// Seeds lookup data plus order 10248, shipped by Speedy Express (ID 1), containing Chai (ID 1, qty 2) and Chang (ID 2, qty 5 at 10% off).
         /// </summary>
         private void SeedOrder()
         {
             using var context = CreateContext();
             context.Customers.Add(new Customer { CustomerID = "ALFKI", CompanyName = "Alfreds Futterkiste" });
             context.Employees.Add(new Employee { EmployeeID = 1, FirstName = "Nancy", LastName = "Davolio" });
+            context.Shippers.AddRange(
+                new Shipper { ShipperID = 1, CompanyName = "Speedy Express" },
+                new Shipper { ShipperID = 2, CompanyName = "Federal Shipping" }
+            );
             context.Products.AddRange(
                 new Product { ProductID = 1, ProductName = "Chai", UnitPrice = 18.00m },
                 new Product { ProductID = 2, ProductName = "Chang", UnitPrice = 19.00m },
@@ -35,6 +39,7 @@ namespace UnitTests.Components
                 OrderID = SeededOrderID,
                 CustomerID = "ALFKI",
                 EmployeeID = 1,
+                ShipVia = 1,
                 OrderDate = new DateTime(2026, 10, 1),
                 Order_Details = new List<Order_Detail>
                 {
@@ -55,6 +60,11 @@ namespace UnitTests.Components
         private static IElement FindButton(IRenderedComponent<OrderEdit> cut, string text)
         {
             return cut.FindAll("button").Single(b => b.TextContent.Contains(text));
+        }
+
+        private static IRenderedComponent<MudSelect<int?>> FindShipperSelect(IRenderedComponent<OrderEdit> cut)
+        {
+            return cut.FindComponents<MudSelect<int?>>().Single(s => s.Instance.Label == "Logistical Distribution Carrier");
         }
 
         private IEnumerable<string> ShownSnackbarMessages() =>
@@ -90,6 +100,23 @@ namespace UnitTests.Components
                 CartRows(cut).Should().HaveCount(2);
                 CartRows(cut).Should().Contain(r => r.TextContent.Contains("Chai"));
                 CartRows(cut).Should().Contain(r => r.TextContent.Contains("Chang"));
+            });
+        }
+
+        [Fact]
+        public void Render_ExistingOrderWithShipper_PreselectsThatShipper()
+        {
+            // Arrange
+            SeedOrder();
+
+            // Act
+            var cut = RenderEditor(SeededOrderID);
+
+            // Assert
+            cut.WaitForAssertion(() =>
+            {
+                // bUnit doesn't render the option items outside the popover, so the displayed text can't be checked here
+                FindShipperSelect(cut).Instance.Value.Should().Be(1);
             });
         }
 
@@ -180,7 +207,7 @@ namespace UnitTests.Components
         }
 
         [Fact]
-        public void DeleteButton_ClickedOnSecondRow_RemovesThatProductOnly()
+        public async Task DeleteButton_ClickedOnSecondRow_RemovesThatProductOnly()
         {
             // Arrange
             SeedOrder();
@@ -188,7 +215,7 @@ namespace UnitTests.Components
             cut.WaitForAssertion(() => CartRows(cut).Should().HaveCount(2));
 
             // Act
-            CartRows(cut).Single(r => r.TextContent.Contains("Chang")).QuerySelector("button")!.Click();
+            await ClickAsync(cut, () => CartRows(cut).Single(r => r.TextContent.Contains("Chang")).QuerySelector("button")!);
 
             // Assert
             CartRows(cut).Should().ContainSingle()
@@ -201,7 +228,7 @@ namespace UnitTests.Components
         #region Saving & cancelling
 
         [Fact]
-        public void Save_AfterRemovingLine_PersistsCartAndShowsFeedback()
+        public async Task Save_AfterRemovingLine_PersistsCartAndShowsFeedback()
         {
             // Arrange
             SeedOrder();
@@ -209,7 +236,7 @@ namespace UnitTests.Components
             cut.WaitForAssertion(() => CartRows(cut).Should().HaveCount(2));
 
             // Act
-            CartRows(cut).Single(r => r.TextContent.Contains("Chang")).QuerySelector("button")!.Click();
+            await ClickAsync(cut, () => CartRows(cut).Single(r => r.TextContent.Contains("Chang")).QuerySelector("button")!);
             cut.WaitForAssertion(() => FindButton(cut, "Save Changes").HasAttribute("disabled").Should().BeFalse());
             FindButton(cut, "Save Changes").Click();
 
@@ -220,6 +247,29 @@ namespace UnitTests.Components
             using var verifyContext = CreateContext();
             verifyContext.Order_Details.Where(d => d.OrderID == SeededOrderID).Select(d => d.ProductID)
                 .Should().Equal(1);
+        }
+
+        [Fact]
+        public async Task Save_ChangedShipper_PersistsNewShipper()
+        {
+            // Arrange
+            SeedOrder();
+            var cut = RenderEditor(SeededOrderID);
+            cut.WaitForAssertion(() => FindShipperSelect(cut).Instance.Value.Should().Be(1));
+
+            // Act - pick Federal Shipping through the select's own path, which also marks the form as touched.
+            // Cast to object so this selects by value; SelectOption(int) selects by index.
+            var shipperSelect = FindShipperSelect(cut);
+            await cut.InvokeAsync(() => shipperSelect.Instance.SelectOption((object)2));
+            cut.WaitForAssertion(() => FindButton(cut, "Save Changes").HasAttribute("disabled").Should().BeFalse());
+            FindButton(cut, "Save Changes").Click();
+
+            // Assert
+            cut.WaitForAssertion(() =>
+                cut.Find(".mud-alert").TextContent.Should().Contain($"Order {SeededOrderID} was successfully saved and logged."));
+
+            using var verifyContext = CreateContext();
+            verifyContext.Orders.Single(o => o.OrderID == SeededOrderID).ShipVia.Should().Be(2);
         }
 
         [Fact]
@@ -262,7 +312,7 @@ namespace UnitTests.Components
         }
 
         [Fact]
-        public void Cancel_WithChanges_DiscardChanges_NavigatesWithoutSaving()
+        public async Task Cancel_WithChanges_DiscardChanges_NavigatesWithoutSaving()
         {
             // Arrange
             SeedOrder();
@@ -270,7 +320,7 @@ namespace UnitTests.Components
             var cut = RenderEditor(SeededOrderID);
             var navigationManager = Services.GetRequiredService<NavigationManager>();
             cut.WaitForAssertion(() => CartRows(cut).Should().HaveCount(2));
-            CartRows(cut).Single(r => r.TextContent.Contains("Chang")).QuerySelector("button")!.Click();
+            await ClickAsync(cut, () => CartRows(cut).Single(r => r.TextContent.Contains("Chang")).QuerySelector("button")!);
 
             // Act
             FindButton(cut, "Cancel").Click();

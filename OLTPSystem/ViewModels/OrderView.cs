@@ -18,6 +18,7 @@ namespace OLTPSystem.ViewModels
         public decimal? Freight { get; set; }
         public string ShipCity { get; set; }
         public string ShipCountry { get; set; }
+        public int? ShipVia { get; set; }
         public string ShipperName { get; set; }
     }
 }

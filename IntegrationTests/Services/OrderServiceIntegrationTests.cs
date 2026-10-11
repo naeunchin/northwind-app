@@ -142,6 +142,53 @@ namespace IntegrationTests.Services
             savedDetails.Should().NotContain(d => d.ProductID == _chang.ProductID);
         }
 
+        [Fact]
+        public async Task AddEditOrderAsync_NewOrderWithShipper_PersistsShipViaAndJoinsShipperName()
+        {
+            // Arrange
+            await SeedLookupDataAsync();
+            var shipper = new Shipper { CompanyName = "Speedy Express" };
+            await SeedAsync(shipper);
+
+            var service = new OrderService(ContextFactory);
+            var orderView = CreateOrderView();
+            orderView.ShipVia = shipper.ShipperID;
+            var items = new List<OrderDetailView> { new() { ProductID = _chai.ProductID, UnitPrice = 18.00m, Quantity = 1 } };
+
+            // Act
+            var result = await service.AddEditOrderAsync(orderView, items);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.ShipperName.Should().Be("Speedy Express");
+
+            await using var verifyContext = CreateContext();
+            (await verifyContext.Orders.SingleAsync()).ShipVia.Should().Be(shipper.ShipperID);
+        }
+
+        [Fact]
+        public async Task AddEditOrderAsync_ShipperDoesNotExist_ReturnsForeignKeyErrorAndSavesNothing()
+        {
+            // Arrange
+            await SeedLookupDataAsync();
+
+            var service = new OrderService(ContextFactory);
+            var orderView = CreateOrderView();
+            orderView.ShipVia = 999;
+            var items = new List<OrderDetailView> { new() { ProductID = _chai.ProductID, UnitPrice = 18.00m, Quantity = 1 } };
+
+            // Act
+            var result = await service.AddEditOrderAsync(orderView, items);
+
+            // Assert
+            result.IsFailure.Should().BeTrue();
+            result.Errors.Should().ContainSingle(e => e.Code == "Error Saving Changes")
+                .Which.Message.Should().Contain("FK_Orders_Shippers");
+
+            await using var verifyContext = CreateContext();
+            (await verifyContext.Orders.AnyAsync()).Should().BeFalse();
+        }
+
         #endregion
 
         #region DeleteOrderAsync tests

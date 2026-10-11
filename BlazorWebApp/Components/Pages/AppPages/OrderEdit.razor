@@ -78,14 +78,14 @@
                                   MaxLength="15"
                                   Immediate="true" />
 
-                    <MudSelect T="string"
-                               @bind-Value="editOrder.ShipperName"
+                    <MudSelect T="int?"
+                               @bind-Value="editOrder.ShipVia"
                                Variant="Variant.Outlined"
                                Label="Logistical Distribution Carrier"
                                Placeholder="Select Freight Logistics Entity...">
                         @foreach (var shipper in shipperOptions)
                         {
-                            <MudSelectItem T="string" Value="@shipper.CompanyName">@shipper.CompanyName</MudSelectItem>
+                            <MudSelectItem T="int?" Value="@shipper.ShipperID">@shipper.CompanyName</MudSelectItem>
                         }
                     </MudSelect>
 

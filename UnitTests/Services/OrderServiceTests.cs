@@ -398,6 +398,83 @@ namespace UnitTests.Services
 
         #endregion
 
+        #region Shipper tests
+
+        [Fact]
+        public async Task AddEditOrderAsync_ChangedShipper_SavesShipViaAndReturnsNewShipperName()
+        {
+            // Arrange
+            using (var seedContext = CreateContext())
+            {
+                seedContext.Customers.Add(new Customer { CustomerID = "ALFKI", CompanyName = "Alfreds Futterkiste" });
+                seedContext.Employees.Add(new Employee { EmployeeID = 1, FirstName = "Nancy", LastName = "Davolio" });
+                seedContext.Shippers.AddRange(
+                    new Shipper { ShipperID = 1, CompanyName = "Speedy Express" },
+                    new Shipper { ShipperID = 2, CompanyName = "Federal Shipping" }
+                );
+                seedContext.Products.Add(new Product { ProductID = 1, ProductName = "Chai", UnitPrice = 18.00m });
+                seedContext.Orders.Add(new Order
+                {
+                    OrderID = 100,
+                    CustomerID = "ALFKI",
+                    EmployeeID = 1,
+                    ShipVia = 1,
+                    Order_Details = new List<Order_Detail> { new Order_Detail { OrderID = 100, ProductID = 1, UnitPrice = 18.00m, Quantity = 1 } }
+                });
+                await seedContext.SaveChangesAsync();
+            }
+
+            var service = new OrderService(_contextFactory);
+            var loaded = await service.GetOrderByIDAsync(100);
+            loaded.Value.ShipVia.Should().Be(1);
+
+            var editOrder = loaded.Value;
+            editOrder.ShipVia = 2;
+            var items = new List<OrderDetailView> { new OrderDetailView { ProductID = 1, UnitPrice = 18.00m, Quantity = 1 } };
+
+            // Act
+            var result = await service.AddEditOrderAsync(editOrder, items);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.ShipVia.Should().Be(2);
+            result.Value.ShipperName.Should().Be("Federal Shipping");
+
+            using var verifyContext = CreateContext();
+            (await verifyContext.Orders.FindAsync(100))!.ShipVia.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task AddEditOrderAsync_ShipperCleared_SavesNullAndReturnsUnassignedCarrier()
+        {
+            // Arrange
+            using (var seedContext = CreateContext())
+            {
+                seedContext.Customers.Add(new Customer { CustomerID = "ALFKI", CompanyName = "Alfreds Futterkiste" });
+                seedContext.Employees.Add(new Employee { EmployeeID = 1, FirstName = "Nancy", LastName = "Davolio" });
+                seedContext.Shippers.Add(new Shipper { ShipperID = 1, CompanyName = "Speedy Express" });
+                seedContext.Products.Add(new Product { ProductID = 1, ProductName = "Chai", UnitPrice = 18.00m });
+                seedContext.Orders.Add(new Order { OrderID = 100, CustomerID = "ALFKI", EmployeeID = 1, ShipVia = 1 });
+                await seedContext.SaveChangesAsync();
+            }
+
+            var service = new OrderService(_contextFactory);
+            var editOrder = new OrderView { OrderID = 100, CustomerID = "ALFKI", EmployeeID = 1, ShipVia = null };
+            var items = new List<OrderDetailView> { new OrderDetailView { ProductID = 1, UnitPrice = 18.00m, Quantity = 1 } };
+
+            // Act
+            var result = await service.AddEditOrderAsync(editOrder, items);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.ShipperName.Should().Be("Unassigned Carrier");
+
+            using var verifyContext = CreateContext();
+            (await verifyContext.Orders.FindAsync(100))!.ShipVia.Should().BeNull();
+        }
+
+        #endregion
+
         #region DeleteOrderAsync tests
 
         [Fact]

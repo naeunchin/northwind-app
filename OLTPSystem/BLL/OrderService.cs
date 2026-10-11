@@ -44,6 +44,7 @@ namespace OLTPSystem.BLL
                                                         Freight = o.Freight,
                                                         ShipCity = o.ShipCity,
                                                         ShipCountry = o.ShipCountry,
+                                                        ShipVia = o.ShipVia,
                                                         ShipperName = o.ShipViaNavigation != null ? o.ShipViaNavigation.CompanyName : "Unassigned Carrier"
                                                     }).OrderByDescending(o => o.OrderDate).ToListAsync();
 
@@ -89,6 +90,7 @@ namespace OLTPSystem.BLL
                 Freight = o.Freight,
                 ShipCity = o.ShipCity,
                 ShipCountry = o.ShipCountry,
+                ShipVia = o.ShipVia,
                 ShipperName = o.ShipViaNavigation != null ? o.ShipViaNavigation.CompanyName : "Unassigned Carrier"
             }).OrderByDescending(o => o.OrderDate).ToListAsync();
 
@@ -125,6 +127,7 @@ namespace OLTPSystem.BLL
                                                 Freight = o.Freight,
                                                 ShipCity = o.ShipCity,
                                                 ShipCountry = o.ShipCountry,
+                                                ShipVia = o.ShipVia,
                                                 ShipperName = o.ShipViaNavigation != null ? o.ShipViaNavigation.CompanyName : "Unassigned Carrier"
                                             }).FirstOrDefaultAsync();
 
@@ -190,6 +193,7 @@ namespace OLTPSystem.BLL
             order.Freight = editOrder.Freight ?? 0.00m;
             order.ShipCity = editOrder.ShipCity;
             order.ShipCountry = editOrder.ShipCountry;
+            order.ShipVia = editOrder.ShipVia;
 
             if (order.OrderID != 0)
             {
