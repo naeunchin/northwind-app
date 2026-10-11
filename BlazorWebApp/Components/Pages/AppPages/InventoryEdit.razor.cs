@@ -145,7 +145,7 @@ namespace BlazorWebApp.Components.Pages.AppPages
                     if (editProduct.ProductID > 0)
                     {
                         feedbackMessage = $"Product {editProduct.ProductName} was successfully saved.";
-                        Snackbar.Add("Changes saved successully.", Severity.Success);
+                        Snackbar.Add("Changes saved successfully.", Severity.Success);
 
                         hasFormChanged = false;
                         isFormValid = false;
