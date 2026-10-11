@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel an in-progress run when a newer commit is pushed to the same branch or PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build and test
+    # Ubuntu runners ship with Docker, which Testcontainers needs for the SQL Server integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # The .NET 9 SDK builds the net8.0 app projects and runs the net9.0 test projects
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore NorthwindApp.sln
+
+      - name: Build
+        run: dotnet build NorthwindApp.sln --configuration Release --no-restore
+
+      - name: Unit tests
+        run: >
+          dotnet test UnitTests/UnitTests.csproj
+          --configuration Release --no-build
+          --logger "trx;LogFileName=unit-tests.trx"
+          --results-directory TestResults
+
+      - name: Integration tests
+        run: >
+          dotnet test IntegrationTests/IntegrationTests.csproj
+          --configuration Release --no-build
+          --logger "trx;LogFileName=integration-tests.trx"
+          --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/*.trx
+          if-no-files-found: ignore

@@ -1,5 +1,7 @@
 # Northwind Sales Portal Web App
 
+[![CI](https://github.com/naeunchin/northwind-app/actions/workflows/ci.yml/badge.svg)](https://github.com/naeunchin/northwind-app/actions/workflows/ci.yml)
+
 ## Overview
 A mock enterprise system for order and product inventory management built using .NET 8 Blazor Web App. This application allows Northwind enterprise employees to view, create, edit, and manage corporate order ledgers and their associated shopping-cart line items.  
 
