@@ -2,51 +2,16 @@ using BlazorWebApp.Components.Pages.AppPages;
 using Bunit;
 using FluentAssertions;
 using Microsoft.AspNetCore.Components;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using OLTPSystem.BLL;
-using OLTPSystem.DAL;
 using OLTPSystem.Entities;
-using UnitTests.Services;
 
 namespace UnitTests.Components
 {
     /// <summary>
     /// Renders the Orders page against a real OrderService backed by an in-memory SQLite database.
     /// </summary>
-    public class OrdersPageTests : ComponentTestBase
+    public class OrdersPageTests : DatabaseComponentTestBase
     {
-        private readonly SqliteConnection _connection;
-
-        public OrdersPageTests()
-        {
-            _connection = new SqliteConnection("DataSource=:memory:");
-            _connection.Open();
-
-            using (var context = CreateContext())
-            {
-                context.Database.EnsureCreated();
-            }
-
-            Services.AddScoped(_ => new OrderService(new TestDbContextFactory(_connection)));
-
-            RenderMudProviders();
-        }
-
-        protected override async ValueTask DisposeAsyncCore()
-        {
-            await base.DisposeAsyncCore();
-            await _connection.DisposeAsync();
-        }
-
-        private NorthwindContext CreateContext()
-        {
-            var options = new DbContextOptionsBuilder<NorthwindContext>().UseSqlite(_connection).Options;
-
-            return new TestNorthwindContext(options);
-        }
-
         private void SeedOrders()
         {
             using var context = CreateContext();

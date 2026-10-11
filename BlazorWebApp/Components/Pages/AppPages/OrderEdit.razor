@@ -144,9 +144,11 @@
 
         <MudItem xs="12" Class="mt-6">
             <MudPaper Elevation="0" Class="d-flex justify-center gap-4 bg-transparent">
+                @* Cart edits don't touch form fields, so MudForm never re-evaluates IsValid for them;
+                   enable on any change and let AddEditOrder validate the form on click *@
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Success"
-                           Disabled="@(!isFormValid || !hasFormChanged)"
+                           Disabled="@(!hasFormChanged)"
                            OnClick="AddEditOrder"
                            Size="Size.Large"
                            Class="px-10 py-3 rounded-lg">

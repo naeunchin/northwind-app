@@ -243,7 +243,7 @@ namespace BlazorWebApp.Components.Pages.AppPages
         {
             ResetMessageStates();
 
-            var targetItem = orderItems.FirstOrDefault(x => x.ProductID <= productID);
+            var targetItem = orderItems.FirstOrDefault(x => x.ProductID == productID);
             if (targetItem != null)
             {
                 orderItems.Remove(targetItem);

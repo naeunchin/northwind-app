@@ -26,6 +26,15 @@ namespace UnitTests.Components
             Render<MudPopoverProvider>();
         }
 
+        /// <summary>
+        /// Renders the MudDialogProvider that hosts dialogs and message boxes opened through IDialogService.
+        /// Dialog markup appears inside the returned component, not the component under test.
+        /// </summary>
+        protected IRenderedComponent<MudDialogProvider> RenderDialogProvider()
+        {
+            return Render<MudDialogProvider>();
+        }
+
         Task IAsyncLifetime.InitializeAsync() => Task.CompletedTask;
 
         // MudBlazor's PopoverService only supports async disposal, and xUnit 2 only disposes test classes asynchronously through IAsyncLifetime
