@@ -1,4 +1,7 @@
+using AngleSharp.Dom;
 using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using MudBlazor.Services;
 
@@ -33,6 +36,17 @@ namespace UnitTests.Components
         protected IRenderedComponent<MudDialogProvider> RenderDialogProvider()
         {
             return Render<MudDialogProvider>();
+        }
+
+        /// <summary>
+        /// Finds and clicks an element in a single step on the renderer's dispatcher. Buttons whose OnClick is a lambda
+        /// (such as per-row grid buttons) get a new event handler ID on every render, so a render from async page work landing
+        /// between a separate find and click would leave the click pointing at a stale handler.
+        /// </summary>
+        protected static Task ClickAsync<TComponent>(IRenderedComponent<TComponent> cut, Func<IElement> findElement)
+            where TComponent : IComponent
+        {
+            return cut.InvokeAsync(() => findElement().ClickAsync(new MouseEventArgs()));
         }
 
         Task IAsyncLifetime.InitializeAsync() => Task.CompletedTask;

@@ -157,7 +157,7 @@ namespace UnitTests.Components
         }
 
         [Fact]
-        public void EditButton_Click_NavigatesToThatProductsEditor()
+        public async Task EditButton_Click_NavigatesToThatProductsEditor()
         {
             // Arrange
             SeedProducts();
@@ -166,8 +166,7 @@ namespace UnitTests.Components
 
             // Act
             cut.WaitForAssertion(() => cut.FindAll(".mud-table-body tr").Should().HaveCount(3));
-            var changRow = cut.FindAll(".mud-table-body tr").Single(r => r.TextContent.Contains("Chang"));
-            changRow.QuerySelector("button")!.Click();
+            await ClickAsync(cut, () => cut.FindAll(".mud-table-body tr").Single(r => r.TextContent.Contains("Chang")).QuerySelector("button")!);
 
             // Assert
             navigationManager.Uri.Should().EndWith("/ProductEdit/2");
