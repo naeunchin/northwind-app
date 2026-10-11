@@ -23,11 +23,11 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
-      # The .NET 9 SDK builds the net8.0 app projects and runs the net9.0 test projects
+      # All projects target net8.0
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.0.x
+          dotnet-version: 8.0.x
 
       - name: Cache NuGet packages
         uses: actions/cache@v4

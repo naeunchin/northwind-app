@@ -48,12 +48,12 @@
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                             Color="Color.Secondary"
                                             Size="Size.Small"
-                                            onclick="@(() => EditOrder(context.Item.OrderID))"
+                                            OnClick="@(() => EditOrder(context.Item.OrderID))"
                                             title="Edit Order"/>
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                        Color="Color.Error"
                                        Size="Size.Small"
-                                       onclick="@(() => DeleteOrder(context.Item.OrderID))"
+                                       OnClick="@(() => DeleteOrder(context.Item.OrderID))"
                                        title="Delete Order" />
                     </div>
                 </CellTemplate>
